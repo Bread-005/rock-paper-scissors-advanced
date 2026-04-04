@@ -7,26 +7,26 @@
     <link rel="stylesheet" crossorigin="anonymous" href="https://core.ontavio.de/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
-<div id="lobby">
-    <h1>Join Game</h1>
-    <p id="your-name-display">Your Name: </p>
-    <button id="join-game-button">Join Game</button>
-    <p>Current Players:</p>
-    <div id="current-players-display">Noone is currently playing</div>
-</div>
-
-<div id="game">
-    <h1>Game</h1>
-    <div id="playerList"></div>
-
-    <div id="gameplay-div">
-        <div id="choose-panel"></div>
-        <div id="current-choice-display"></div>
+<div class="rock-paper-scissors-div">
+    <div id="lobby">
+        <h1>Join Game</h1>
+        <p id="your-name-display">Your Name: </p>
+        <button id="join-game-button">Join Game</button>
+        <p>Current Players:</p>
     </div>
 
-    <button id="leave-game-button">Leave Game</button>
-</div>
+    <div id="game">
+        <h1>Game</h1>
+        <div id="playerList"></div>
 
+        <div id="gameplay-div">
+            <div id="choose-panel"></div>
+            <div id="choice-result-display"></div>
+        </div>
+
+        <button id="leave-game-button">Leave Game</button>
+    </div>
+</div>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="index.js"></script>
 

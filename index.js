@@ -22,13 +22,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         lobby.style.display = "none";
         game.style.display = "flex";
+        document.getElementById("leave-game-button").style.visibility = "visible";
     });
 
     document.getElementById("leave-game-button").addEventListener("click", () => {
         socket.emit("leave");
 
         lobby.style.display = "flex";
-        game.style.display = "none";
+        document.getElementById("leave-game-button").style.visibility = "hidden";
     });
 
     socket.on("init", (id) => {
@@ -36,63 +37,94 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const gameplayDiv = document.getElementById("gameplay-div");
-    const currentChoiceDisplay = document.getElementById("current-choice-display");
 
-    // Spiel aktualisieren
     socket.on("game", (serverPlayers) => {
         players = serverPlayers;
 
         const playerList = document.getElementById("playerList");
         playerList.innerHTML = "";
+        const choiceResultDisplay = document.getElementById("choice-result-display");
         for (let i = 0; i < players.length; i++) {
-            const div = document.createElement("div");
-            div.textContent = (i + 1) + ". " + players[i].name;
-            if (myId === players[i].id) div.textContent += " (you)";
+            const player = players[i];
+
+            const playerCard = document.createElement("div");
+            playerCard.className = "player-card";
+            if (myId === player.id) playerCard.classList.add("is-you");
+
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "player-name";
+            nameSpan.textContent = (i + 1) + ". " + player.name;
+            if (myId === player.id) nameSpan.textContent += " (you)";
+            playerCard.appendChild(nameSpan);
+
+            const iconSpan = document.createElement("span");
+            iconSpan.className = "player-status-icon";
+
             if (players.length >= 2) {
-                div.textContent += " --- " + "hasChosen: ";
                 const icon = document.createElement("i");
-                if (players[i].chosenCard) {
-                    icon.className = "fa-solid fa-check";
-                    icon.style.color = "rgb(99, 230, 190)";
+                if (player.chosenCard) {
+                    icon.className = "fa-solid fa-circle-check";
+                    icon.style.color = "#00ff88";
                 } else {
-                    icon.className = "fa-solid fa-x";
-                    icon.style.color = "rgb(255, 0, 0)";
+                    icon.className = "fa-solid fa-ellipsis";
+                    icon.style.color = "rgba(255,255,255,0.4)";
                 }
-                div.append(icon);
-                currentChoiceDisplay.textContent = "Current Choice: " + players[i].chosenCard;
+                iconSpan.appendChild(icon);
             }
-            playerList.appendChild(div);
-        }
-    });
+            playerCard.appendChild(iconSpan);
+            playerList.appendChild(playerCard);
 
-    // Menü aktualisieren
-    socket.on("lobby", (serverPlayers) => {
-        players = serverPlayers;
-
-        const currentPlayersDisplay = document.getElementById("current-players-display");
-        currentPlayersDisplay.innerHTML = (players.length > 0) ? "" : "Noone is currently playing";
-        for (const player of players) {
-            const div = document.createElement("div");
-            div.textContent = player.name;
-            currentPlayersDisplay.append(div);
+            if (myId === player.id) {
+                if (player.chosenCard) {
+                    choiceResultDisplay.textContent = "You chose: " + player.chosenCard;
+                }
+                if (!player.chosenCard) {
+                    choiceResultDisplay.textContent = "You gained " + player.energy + " Energy last turn";
+                }
+            }
         }
     });
 
     socket.on("setupChoices", () => {
-        if (players.length >= 2) {
+        if (players.length >= 2 && players.find(p => p.id === myId)) {
             gameplayDiv.style.display = "flex";
             const choosePanel = document.getElementById("choose-panel");
             choosePanel.innerHTML = "";
             for (let i = 0; i < 4; i++) {
                 const button = document.createElement("button");
-                if (i === 0) button.textContent = "Rock";
-                if (i === 1) button.textContent = "Paper";
-                if (i === 2) button.textContent = "Scissors";
-                if (i === 3) button.textContent = "Reset Choice";
+                button.className = "choice-button";
+
+                const icon = document.createElement("i");
+                const label = document.createElement("span");
+                label.className = "choice-label";
+
+                if (i === 0) {
+                    label.textContent = "Rock";
+                    icon.className = "fa-solid fa-hand-fist";
+                }
+                if (i === 1) {
+                    label.textContent = "Paper";
+                    icon.className = "fa-solid fa-hand";
+                }
+                if (i === 2) {
+                    label.textContent = "Scissors";
+                    icon.className = "fa-solid fa-hand-scissors";
+                }
+                if (i === 3) {
+                    label.textContent = "Reset Choice";
+                    icon.className = "fa-solid fa-arrows-rotate";
+                }
+
+                if (label.textContent === players.find(p => p.id === myId).chosenCard) {
+                    button.style.borderColor = "#00d2ff";
+                }
+
+                button.appendChild(icon);
+                button.appendChild(label);
                 choosePanel.append(button);
 
                 button.addEventListener("click", () => {
-                    socket.emit("chose-thing", button.textContent);
+                    socket.emit("chose-thing", label.textContent);
                 });
             }
         } else {
