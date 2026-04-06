@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loginStorage = JSON.parse(localStorage.getItem("login-page"));
 
     if (!localStorage.getItem("login-page") || !loginStorage.name) {
-        window.location = "http://localhost:63342/login-page/index.html";
+        window.location = "https://bread-005.github.io/login-page/index.html";
         return;
     }
 
