@@ -44,6 +44,10 @@ button {
     justify-content: center;
     align-items: center;
 
+    #previous-games-container {
+        margin-bottom: 100vh;
+    }
+
     #lobby {
         display: flex;
         flex-direction: column;

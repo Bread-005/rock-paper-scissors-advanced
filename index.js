@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const USER_API_URL = "https://clocktower-homebrew-collection-13pz.onrender.com";
 
     const users = await fetch(USER_API_URL + "/users").then(res => res.json());
-    if (loginStorage.password !== users.find(user => user.name === loginStorage.name)?.password) {
+    const user = users.find(u => u.name === loginStorage.name);
+    if (user && loginStorage.password !== user.password) {
         window.location = "https://bread-005.github.io/login-page/index.html";
         return;
     }
@@ -20,6 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         headers: {'Content-Type': 'application/json'}
     });
 
+    window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+
     const socket = await io("https://rock-paper-scissors-advanced.onrender.com");
 
     socket.on("connect", () => {
@@ -28,6 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let myId = null;
     let players = [];
+    let games = [];
 
     const lobby = document.getElementById("lobby");
     const game = document.getElementById("game");
@@ -39,15 +43,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         lobby.style.display = "none";
         game.style.display = "flex";
+        game.style.height = "90vh";
         document.getElementById("leave-game-button").style.visibility = "visible";
+        setupPreviousGames();
+
+        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
     });
 
     document.getElementById("leave-game-button").addEventListener("click", () => {
         socket.emit("leave");
 
         lobby.style.display = "flex";
+        game.style.height = "";
         document.getElementById("leave-game-button").style.visibility = "hidden";
+        setupPreviousGames();
+
+        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
     });
+
+    setupPreviousGames();
 
     socket.on("init", (id) => {
         myId = id;
@@ -148,4 +162,59 @@ document.addEventListener("DOMContentLoaded", async () => {
             gameplayDiv.style.display = "none";
         }
     });
+
+    socket.on("games", (serverGames) => {
+        games = serverGames;
+        setupPreviousGames();
+    });
+
+    function setupPreviousGames() {
+        const previousGames = document.getElementById("previous-games-container");
+        previousGames.innerHTML = "";
+
+        const mostRecentGame = document.getElementById("most-recent-game");
+        mostRecentGame.style.display = lobby.style.display === "none" ? "flex" : "none";
+        mostRecentGame.style.flexDirection = "column";
+        mostRecentGame.style.alignItems = "center";
+
+        for (const game of games) {
+            if (!game.players.find(player => player.name === loginStorage.name)) continue;
+
+            const gameContainer = document.createElement("h3");
+            gameContainer.textContent = "Game " + game.id;
+            previousGames.append(gameContainer);
+            mostRecentGame.innerHTML = "";
+            const gameContainerClone = gameContainer.cloneNode(true);
+            gameContainerClone.textContent = "Last Game (Game " + game.id + ")";
+            mostRecentGame.append(gameContainerClone);
+
+            for (let i = 0; i < game.players.length; i++) {
+                const player = game.players[i];
+                const container = document.createElement("div");
+                container.style.display = "flex";
+                container.style.margin = "2px";
+                container.style.gap = "20px";
+                container.style.justifyContent = "flex-start";
+                const name = document.createElement("span");
+                name.textContent = (i + 1) + ". " + player.name;
+                const chosenCard = document.createElement("i");
+                if (player.choice === "Rock") chosenCard.className = "fa-solid fa-hand-fist";
+                if (player.choice === "Paper") chosenCard.className = "fa-solid fa-hand";
+                if (player.choice === "Scissors") chosenCard.className = "fa-solid fa-hand-scissors";
+                const energyGained = document.createElement("div");
+                energyGained.textContent = (player.energyGained > -1 ? "+" : "") + player.energyGained;
+                const zapIcon = document.createElement("i");
+                zapIcon.className = "fa-solid fa-bolt";
+                zapIcon.style.color = "rgb(255, 212, 59)";
+                energyGained.append(zapIcon);
+
+                container.append(name);
+                container.append(chosenCard);
+                container.append(energyGained);
+
+                previousGames.append(container);
+                mostRecentGame.append(container.cloneNode(true));
+            }
+        }
+    }
 });
