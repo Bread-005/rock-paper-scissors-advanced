@@ -7,7 +7,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
+    const USER_API_URL = "https://clocktower-homebrew-collection-13pz.onrender.com";
+
+    const users = await fetch(USER_API_URL + "/users").then(res => res.json());
+    if (loginStorage.password !== users.find(user => user.name === loginStorage.name)?.password) {
+        window.location = "https://bread-005.github.io/login-page/index.html";
+        return;
+    }
+
+    await fetch(USER_API_URL + '/users/update/' + loginStorage.name, {
+        method: "PUT",
+        headers: {'Content-Type': 'application/json'}
+    });
+
     const socket = await io("https://rock-paper-scissors-advanced.onrender.com");
+
+    socket.on("connect", () => {
+        document.getElementById("loading-screen").classList.add("hidden");
+    });
 
     let myId = null;
     let players = [];
