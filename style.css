@@ -11,11 +11,12 @@ body {
 }
 
 h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #fafafa;
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin-bottom: 30px;
+    margin-top: 10px;
+    margin-bottom: 15px;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
@@ -53,13 +54,17 @@ button {
         flex-direction: column;
     }
 
+    #most-recent-game {
+        margin-top: 10px;
+    }
+
     #game {
         display: flex;
         flex-direction: column;
         width: 90vw;
         max-width: 1200px;
-        gap: 30px;
-        padding: 30px;
+        gap: 15px;
+        padding: 15px;
         background: rgba(255, 255, 255, 0.05);
         border-radius: 15px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -69,15 +74,17 @@ button {
             flex: 1; /* Nimmt 1/3 des Platzes ein */
             background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
-            padding: 20px;
+            padding: 12px;
             text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
 
             .player-card {
                 background: rgba(255, 255, 255, 0.05);
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: 8px;
-                padding: 15px;
-                margin-bottom: 10px;
+                padding: 10px;
+                margin-bottom: 8px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -102,28 +109,28 @@ button {
         #gameplay-div {
             display: none;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
 
             #choose-panel {
                 display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 15px;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
                 width: 100%;
 
                 .choice-button {
                     background: rgba(255, 255, 255, 0.05);
                     border: 2px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 12px;
+                    border-radius: 10px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    padding: 20px;
+                    padding: 10px;
                     transition: all 0.3s ease;
 
                     i {
-                        font-size: 3rem;
-                        margin-bottom: 10px;
+                        font-size: 1.6rem;
+                        margin-bottom: 6px;
                         color: rgba(255, 255, 255, 0.7);
                     }
 
@@ -135,20 +142,20 @@ button {
                 }
 
                 .choice-label {
-                    font-size: 1rem;
+                    font-size: 0.85rem;
                     text-transform: uppercase;
                     letter-spacing: 1px;
                 }
             }
 
             #choice-result-display {
-                min-height: 80px;
+                min-height: 50px;
                 background: rgba(0, 0, 0, 0.3);
                 border-radius: 8px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                font-size: 1.2rem;
+                font-size: 1rem;
                 font-style: italic;
                 color: rgba(255, 255, 255, 0.6);
                 padding: 4px;

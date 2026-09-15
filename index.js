@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    const USER_API_URL = "https://clocktower-homebrew-collection-13pz.onrender.com";
+    const USER_API_URL = "https://hobby-projects-api.onrender.com";
 
     const users = await fetch(USER_API_URL + "/users").then(res => res.json());
     const user = users.find(u => u.name === loginStorage.name);
@@ -20,8 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: "PUT",
         headers: {'Content-Type': 'application/json'}
     });
-
-    window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
 
     const socket = await io("https://rock-paper-scissors-advanced.onrender.com");
 
@@ -166,6 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.on("games", (serverGames) => {
         games = serverGames;
         setupPreviousGames();
+        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
     });
 
     function setupPreviousGames() {
