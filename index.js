@@ -61,6 +61,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     setupPreviousGames();
 
+    socket.on("joinError", (message) => {
+        alert(message);
+
+        lobby.style.display = "flex";
+        game.style.height = "";
+        document.getElementById("leave-game-button").style.visibility = "hidden";
+        setupPreviousGames();
+    });
+
     socket.on("init", (id) => {
         myId = id;
     });

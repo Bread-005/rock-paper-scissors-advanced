@@ -82,6 +82,11 @@ io.on("connection", async (socket) => {
     emitGameState();
 
     socket.on("join", (name) => {
+        if (players.find(player => player.name === name)) {
+            socket.emit("joinError", "A player named \"" + name + "\" is already in this game.");
+            return;
+        }
+
         players.push({
             id: socket.id,
             name: name,
