@@ -69,7 +69,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const playerList = document.getElementById("playerList");
         playerList.innerHTML = "";
-        const choiceResultDisplay = document.getElementById("choice-result-display");
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
 
@@ -99,15 +98,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             playerCard.appendChild(iconSpan);
             playerList.appendChild(playerCard);
-
-            if (myId === player.id) {
-                if (player.chosenCard) {
-                    choiceResultDisplay.textContent = "You chose: " + player.chosenCard;
-                }
-                if (!player.chosenCard) {
-                    choiceResultDisplay.textContent = "You gained " + player.energy + " Energy last turn";
-                }
-            }
         }
     });
 

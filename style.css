@@ -147,19 +147,6 @@ button {
                     letter-spacing: 1px;
                 }
             }
-
-            #choice-result-display {
-                min-height: 50px;
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 8px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 1rem;
-                font-style: italic;
-                color: rgba(255, 255, 255, 0.6);
-                padding: 4px;
-            }
         }
 
         #leave-game-button {
