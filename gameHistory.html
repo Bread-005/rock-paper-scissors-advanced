@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Game History</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" crossorigin="anonymous" href="https://core.ontavio.de/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body>
+    <div class="game-history-div">
+        <h1>Game History</h1>
+        <a id="back-to-game-link" href="index.html">Back to Game</a>
+
+        <div id="game-history-list"></div>
+
+        <div id="pagination"></div>
+
+        <div id="loading-screen">
+            <div class="loader-content">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Connecting to Server...</p>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="gameHistory.js" type="module" defer></script>
+</body>
+</html>

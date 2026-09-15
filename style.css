@@ -207,3 +207,138 @@ button {
         }
     }
 }
+
+a {
+    color: #00d2ff;
+    text-decoration: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+#game-history-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+}
+
+.game-history-div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90vw;
+    max-width: 800px;
+    height: 100vh;
+    max-height: 100vh;
+    box-sizing: border-box;
+    gap: 15px;
+    padding: 15px;
+
+    #back-to-game-link {
+        margin-bottom: 10px;
+    }
+
+    #game-history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+
+        .game-history-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: left;
+
+            h3 {
+                margin-top: 0;
+            }
+
+            .game-history-player-row {
+                display: flex;
+                margin: 2px;
+                gap: 20px;
+                justify-content: flex-start;
+                align-items: center;
+            }
+        }
+    }
+
+    #pagination {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+        flex-shrink: 0;
+
+        button {
+            padding: 6px 12px;
+
+            &:disabled {
+                opacity: 0.4;
+                cursor: default;
+
+                &:hover {
+                    cursor: default;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-color: rgba(255, 255, 255, 0.2);
+                    color: white;
+                    box-shadow: none;
+                }
+            }
+        }
+
+        .pagination-page-button.is-active {
+            background: #00d2ff;
+            border-color: #00d2ff;
+            color: #12162a;
+        }
+    }
+
+    #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(18, 22, 42, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+        opacity: 1;
+        visibility: visible;
+
+        &.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-content {
+            text-align: center;
+            color: #00d2ff;
+
+            i {
+                font-size: 3rem;
+                margin-bottom: 15px;
+            }
+
+            p {
+                font-family: Arial, sans-serif;
+                font-size: 1.2rem;
+                letter-spacing: 1px;
+            }
+        }
+    }
+}
