@@ -2,43 +2,42 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Multiplayer Game</title>
+    <title>Rock Paper Scissors</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" crossorigin="anonymous" href="https://core.ontavio.de/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
-<div class="rock-paper-scissors-div">
-    <div id="previous-games-container"></div>
+    <div class="rock-paper-scissors-div">
+        <div id="previous-games-container"></div>
 
-    <div id="lobby">
-        <h1>Join Game</h1>
-        <p id="your-name-display">Your Name: </p>
-        <button id="join-game-button">Join Game</button>
-        <p>Current Players:</p>
-    </div>
-
-    <div id="game">
-        <div id="most-recent-game"></div>
-        <h1>Game</h1>
-        <div id="playerList"></div>
-
-        <div id="gameplay-div">
-            <div id="choose-panel"></div>
-            <div id="choice-result-display"></div>
+        <div id="lobby">
+            <h1>Join Game</h1>
+            <p id="your-name-display">Your Name: </p>
+            <button id="join-game-button">Join Game</button>
+            <p>Current Players:</p>
         </div>
 
-        <button id="leave-game-button">Leave Game</button>
-    </div>
+        <div id="game">
+            <div id="most-recent-game"></div>
+            <h1>Game</h1>
+            <div id="playerList"></div>
 
-    <div id="loading-screen">
-        <div class="loader-content">
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            <p>Connecting to Server...</p>
+            <div id="gameplay-div">
+                <div id="choose-panel"></div>
+                <div id="choice-result-display"></div>
+            </div>
+
+            <button id="leave-game-button">Leave Game</button>
+        </div>
+
+        <div id="loading-screen">
+            <div class="loader-content">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Connecting to Server...</p>
+            </div>
         </div>
     </div>
-</div>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="index.js"></script>
-
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="index.js" type="module" defer></script>
 </body>
 </html>
