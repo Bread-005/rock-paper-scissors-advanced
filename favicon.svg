@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="30" fill="#2b2d42"/>
+    <text x="14" y="40" font-size="18" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">✊</text>
+    <text x="34" y="40" font-size="18" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">✋</text>
+    <text x="54" y="40" font-size="18" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">✌️</text>
+</svg>
