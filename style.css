@@ -214,6 +214,24 @@ a {
     z-index: 100;
 }
 
+#user-bar {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    #your-name-display {
+        margin: 0;
+    }
+
+    #logout-button {
+        padding: 6px 12px;
+    }
+}
+
 .game-history-div {
     display: flex;
     flex-direction: column;

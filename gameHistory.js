@@ -1,4 +1,4 @@
-import {authenticate} from "./auth.js";
+import {authenticate, logout} from "./auth.js";
 
 const GAMES_PER_PAGE = 10;
 
@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.on("connect", () => {
         document.getElementById("loading-screen").classList.add("hidden");
     });
+
+    document.getElementById("your-name-display").textContent = "Your Name: " + loginStorage.name;
+    document.getElementById("logout-button").addEventListener("click", logout);
 
     let myGames = [];
     let currentPage = 1;

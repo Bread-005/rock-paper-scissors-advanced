@@ -1,4 +1,4 @@
-import {authenticate} from "./auth.js";
+import {authenticate, logout} from "./auth.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const game = document.getElementById("game");
 
     document.getElementById("your-name-display").textContent = "Your Name: " + loginStorage.name;
+    document.getElementById("logout-button").addEventListener("click", logout);
 
     document.getElementById("join-game-button").addEventListener("click", () => {
         socket.emit("join", loginStorage.name);
