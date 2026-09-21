@@ -33,10 +33,21 @@ async function authenticate() {
 }
 
 /**
- * Clears the locally stored login and redirects to the login page.
- * @returns {void}
+ * Deletes the current session server-side, clears the locally stored login, and redirects
+ * to the login page.
+ * @returns {Promise<void>}
  */
-function logout() {
+async function logout() {
+    const loginStorage = JSON.parse(localStorage.getItem("login-page"));
+
+    if (loginStorage && loginStorage.token) {
+        await fetch(USER_API_URL + "/session/delete", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({token: loginStorage.token})
+        });
+    }
+
     localStorage.removeItem("login-page");
     window.location = LOGIN_PAGE_URL;
 }
