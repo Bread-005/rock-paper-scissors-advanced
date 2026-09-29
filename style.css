@@ -86,7 +86,6 @@ button {
                 padding: 10px;
                 margin-bottom: 8px;
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
 
                 .player-name {
@@ -95,7 +94,14 @@ button {
                     color: #00d2ff;
                 }
 
+                .player-energy {
+                    margin-left: auto;
+                    min-width: 30px;
+                    text-align: right;
+                }
+
                 .player-status-icon {
+                    margin-left: 20px;
                     font-size: 1.2rem;
                 }
 

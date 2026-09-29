@@ -175,31 +175,32 @@ io.on("connection", async (socket) => {
             return;
         }
 
-        players.push({
-            id: socket.id,
+        const defaultPlayerStats = {
             name: name,
-            chosenCard: "",
             energy: 0,
             chosen: { Rock: 0, Paper: 0, Scissors: 0 },
             total: { Rock: 0, Paper: 0, Scissors: 0 }
-        });
+        };
 
+        let playerDocument = defaultPlayerStats;
         try {
-            await rpsDatabase.collection("players").updateOne(
+            playerDocument = await rpsDatabase.collection("players").findOneAndUpdate(
                 { name: name },
-                {
-                    $setOnInsert: {
-                        name: name,
-                        energy: 0,
-                        chosen: { Rock: 0, Paper: 0, Scissors: 0 },
-                        total: { Rock: 0, Paper: 0, Scissors: 0 }
-                    }
-                },
-                { upsert: true }
+                { $setOnInsert: defaultPlayerStats },
+                { upsert: true, returnDocument: "after" }
             );
         } catch (error) {
             console.error("Failed to upsert player \"" + name + "\" in database:", error);
         }
+
+        players.push({
+            id: socket.id,
+            name: name,
+            chosenCard: "",
+            energy: playerDocument.energy,
+            chosen: playerDocument.chosen,
+            total: playerDocument.total
+        });
 
         for (const player of players) {
             player.chosenCard = "";

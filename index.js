@@ -98,6 +98,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (myId === player.id) nameSpan.textContent += " (you)";
             playerCard.appendChild(nameSpan);
 
+            const energySpan = document.createElement("span");
+            energySpan.className = "player-energy";
+            energySpan.textContent = player.energy;
+            const energyIcon = document.createElement("i");
+            energyIcon.className = "fa-solid fa-bolt";
+            energyIcon.style.color = "rgb(255, 212, 59)";
+            energySpan.appendChild(energyIcon);
+            playerCard.appendChild(energySpan);
+
             const iconSpan = document.createElement("span");
             iconSpan.className = "player-status-icon";
 
