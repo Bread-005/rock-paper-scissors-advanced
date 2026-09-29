@@ -21,7 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("your-name-display").textContent = "Your Name: " + loginStorage.name;
     document.getElementById("logout-button").addEventListener("click", logout);
 
-    document.getElementById("join-game-button").addEventListener("click", () => {
+    function joinGame() {
+        sessionStorage.setItem("isInGame", "true");
         socket.emit("join", {name: loginStorage.name, token: loginStorage.token});
 
         lobby.style.display = "none";
@@ -31,9 +32,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         setupPreviousGames();
 
         window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-    });
+    }
+
+    document.getElementById("join-game-button").addEventListener("click", joinGame);
 
     document.getElementById("leave-game-button").addEventListener("click", () => {
+        sessionStorage.removeItem("isInGame");
         socket.emit("leave");
 
         lobby.style.display = "flex";
@@ -44,13 +48,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
     });
 
+    if (sessionStorage.getItem("isInGame")) {
+        joinGame();
+    }
+
     document.getElementById("game-history-link").addEventListener("click", () => {
+        sessionStorage.removeItem("isInGame");
         socket.emit("leave");
     });
 
     setupPreviousGames();
 
     socket.on("joinError", (message) => {
+        sessionStorage.removeItem("isInGame");
         alert(message);
 
         lobby.style.display = "flex";
@@ -60,6 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     socket.on("sessionInvalid", () => {
+        sessionStorage.removeItem("isInGame");
         window.location = LOGIN_PAGE_URL;
     });
 

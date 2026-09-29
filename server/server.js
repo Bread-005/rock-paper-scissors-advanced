@@ -155,7 +155,10 @@ io.on("connection", async (socket) => {
         if (pendingDisconnectTimeout) {
             clearTimeout(pendingDisconnectTimeout);
             pendingDisconnectTimeouts.delete(name);
-            players.find(player => player.name === name).id = socket.id;
+
+            const reconnectingPlayer = players.find(player => player.name === name);
+            reconnectingPlayer.id = socket.id;
+            reconnectingPlayer.chosenCard = "";
 
             socket.emit("init", socket.id);
             emitGameState();

@@ -1,7 +1,6 @@
 .idea/
 .DS_Store
 node_modules/
-
-server/*
-!server/package.json
-!server/server.js
+.dockerignore
+Dockerfile
+package-lock.json
