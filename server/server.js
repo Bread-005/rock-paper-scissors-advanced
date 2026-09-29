@@ -83,6 +83,11 @@ async function evaluateChoices() {
         }
         player.energy += energyGained;
 
+        player.chosen[player.chosenCard]++;
+        player.total.Rock++;
+        player.total.Paper++;
+        player.total.Scissors++;
+
         game.players.push({
             name: player.name,
             choice: player.chosenCard,
@@ -98,7 +103,7 @@ async function evaluateChoices() {
     try {
         const insertResult = await rpsDatabase.collection("games").insertOne(game);
         game.id = insertResult.insertedId;
-        await updatePlayerEnergyInDatabase(players);
+        await updatePlayerStatsInDatabase(players);
         games.push(game);
         io.emit("games", games);
     } catch (error) {
@@ -124,11 +129,11 @@ function scheduleDisconnectRemoval(idSocket) {
     pendingDisconnectTimeouts.set(player.name, timeout);
 }
 
-async function updatePlayerEnergyInDatabase(playersToUpdate) {
+async function updatePlayerStatsInDatabase(playersToUpdate) {
     const bulkOperations = playersToUpdate.map((player) => ({
         updateOne: {
             filter: { name: player.name },
-            update: { $set: { energy: player.energy } }
+            update: { $set: { energy: player.energy, chosen: player.chosen, total: player.total } }
         }
     }));
 
@@ -136,7 +141,7 @@ async function updatePlayerEnergyInDatabase(playersToUpdate) {
         try {
             await rpsDatabase.collection("players").bulkWrite(bulkOperations);
         } catch (error) {
-            console.error("Failed to update player energy in database:", error);
+            console.error("Failed to update player stats in database:", error);
         }
     }
 }
@@ -174,13 +179,22 @@ io.on("connection", async (socket) => {
             id: socket.id,
             name: name,
             chosenCard: "",
-            energy: 0
+            energy: 0,
+            chosen: { Rock: 0, Paper: 0, Scissors: 0 },
+            total: { Rock: 0, Paper: 0, Scissors: 0 }
         });
 
         try {
             await rpsDatabase.collection("players").updateOne(
                 { name: name },
-                { $setOnInsert: { name: name, energy: 0 } },
+                {
+                    $setOnInsert: {
+                        name: name,
+                        energy: 0,
+                        chosen: { Rock: 0, Paper: 0, Scissors: 0 },
+                        total: { Rock: 0, Paper: 0, Scissors: 0 }
+                    }
+                },
                 { upsert: true }
             );
         } catch (error) {
