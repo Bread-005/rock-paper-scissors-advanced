@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!lastGame) return;
 
         const gameTitle = document.createElement("h3");
-        gameTitle.textContent = "Last Game (Game " + lastGame.id + ")";
+        gameTitle.textContent = "Last Game (your " + getOrdinal(myGames.length) + " game)";
         mostRecentGame.append(gameTitle);
 
         for (let i = 0; i < lastGame.players.length; i++) {
@@ -211,5 +211,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             mostRecentGame.append(container);
         }
+    }
+
+    /**
+     * Formats a number as an English ordinal (1st, 2nd, 3rd, 4th, ...).
+     * @param {number} number The number to format.
+     * @returns {string} The number with its ordinal suffix.
+     */
+    function getOrdinal(number) {
+        const lastTwoDigits = number % 100;
+        if (lastTwoDigits >= 11 && lastTwoDigits <= 13) return number + "th";
+
+        const lastDigit = number % 10;
+        if (lastDigit === 1) return number + "st";
+        if (lastDigit === 2) return number + "nd";
+        if (lastDigit === 3) return number + "rd";
+        return number + "th";
     }
 });
