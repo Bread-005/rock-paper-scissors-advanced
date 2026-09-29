@@ -1,4 +1,4 @@
-import {authenticate, logout} from "./auth.js";
+import {authenticate, logout, LOGIN_PAGE_URL} from "./auth.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("logout-button").addEventListener("click", logout);
 
     document.getElementById("join-game-button").addEventListener("click", () => {
-        socket.emit("join", loginStorage.name);
+        socket.emit("join", {name: loginStorage.name, token: loginStorage.token});
 
         lobby.style.display = "none";
         game.style.display = "flex";
@@ -57,6 +57,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         game.style.height = "";
         document.getElementById("leave-game-button").style.visibility = "hidden";
         setupPreviousGames();
+    });
+
+    socket.on("sessionInvalid", () => {
+        window.location = LOGIN_PAGE_URL;
     });
 
     socket.on("init", (id) => {

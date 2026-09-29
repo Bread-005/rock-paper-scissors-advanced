@@ -40,4 +40,4 @@ function logout() {
     window.location = LOGIN_PAGE_URL;
 }
 
-export {authenticate, logout};
+export {authenticate, logout, LOGIN_PAGE_URL};

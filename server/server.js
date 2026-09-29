@@ -18,16 +18,43 @@ app.use(express.static(__dirname));
 const connectionString = "mongodb+srv://" + process.env.DATABASE_USERNAME + ":" + process.env.DATABASE_PASSWORD + "@clocktowergames.hfnkicc.mongodb.net/?retryWrites=true&w=majority";
 const mongoClient = new MongoClient(connectionString);
 
+const USER_API_URL = "https://hobby-projects-api.onrender.com";
+
+/**
+ * Verifies the given session token against the user API, the same way the login-page-based
+ * frontends (e.g. clocktower-homebrew-collection) do before treating a session as valid.
+ * @param {string} token The session token to verify against the user API.
+ * @returns {Promise<boolean>} Whether the token belongs to a valid session.
+ */
+async function isSessionValid(token) {
+    try {
+        const session = await fetch(USER_API_URL + "/session/verify", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({token: token})
+        }).then(response => response.json());
+
+        return session.isValid === true;
+    } catch (error) {
+        console.error("Failed to verify session token:", error);
+        return false;
+    }
+}
+
 let rpsDatabase;
 
 async function connectDatabase() {
     await mongoClient.connect();
     rpsDatabase = mongoClient.db("RockPaperScissors");
-    console.log("MongoDB connected");
+    await rpsDatabase.collection("players").createIndex({ name: 1 }, { unique: true });
+    games = await rpsDatabase.collection("games").find().toArray();
 }
+
+const DISCONNECT_GRACE_DURATION_MILLISECONDS = 3000;
 
 let players = [];
 let games = [];
+const pendingDisconnectTimeouts = new Map();
 
 function emitGameState() {
     io.emit("lobby", players);
@@ -42,11 +69,8 @@ async function evaluateChoices() {
     }
 
     const game = {
-        id: games.length + 1,
         players: []
     };
-
-    // todo später einbauen das wenn zweimal der gleiche Spieler Name im Spiel ist das das Spiel nicht gespeichert wird
 
     for (const player of players) {
         let energyGained = 0;
@@ -58,7 +82,6 @@ async function evaluateChoices() {
             if (player.chosenCard === "Scissors" && player1.chosenCard === "Paper") energyGained++;
         }
         player.energy += energyGained;
-        console.log(player.name + " has gained " + energyGained + " Energy");
 
         game.players.push({
             name: player.name,
@@ -72,16 +95,73 @@ async function evaluateChoices() {
     }
     emitGameState();
 
-    await rpsDatabase.collection("games").insertOne(game);
-    games = await rpsDatabase.collection("games").find().toArray();
-    io.emit("games", games);
+    try {
+        const insertResult = await rpsDatabase.collection("games").insertOne(game);
+        game.id = insertResult.insertedId;
+        await updatePlayerEnergyInDatabase(players);
+        games.push(game);
+        io.emit("games", games);
+    } catch (error) {
+        console.error("Failed to persist game result:", error);
+    }
+}
+
+async function removePlayer(idSocket) {
+    players = players.filter(p => p.id !== idSocket);
+    emitGameState();
+    await evaluateChoices();
+}
+
+function scheduleDisconnectRemoval(idSocket) {
+    const player = players.find(p => p.id === idSocket);
+    if (!player) return;
+
+    const timeout = setTimeout(async () => {
+        pendingDisconnectTimeouts.delete(player.name);
+        await removePlayer(idSocket);
+    }, DISCONNECT_GRACE_DURATION_MILLISECONDS);
+
+    pendingDisconnectTimeouts.set(player.name, timeout);
+}
+
+async function updatePlayerEnergyInDatabase(playersToUpdate) {
+    const bulkOperations = playersToUpdate.map((player) => ({
+        updateOne: {
+            filter: { name: player.name },
+            update: { $set: { energy: player.energy } }
+        }
+    }));
+
+    if (bulkOperations.length > 0) {
+        try {
+            await rpsDatabase.collection("players").bulkWrite(bulkOperations);
+        } catch (error) {
+            console.error("Failed to update player energy in database:", error);
+        }
+    }
 }
 
 io.on("connection", async (socket) => {
 
     emitGameState();
 
-    socket.on("join", (name) => {
+    socket.on("join", async ({name, token}) => {
+        if (!(await isSessionValid(token))) {
+            socket.emit("sessionInvalid");
+            return;
+        }
+
+        const pendingDisconnectTimeout = pendingDisconnectTimeouts.get(name);
+        if (pendingDisconnectTimeout) {
+            clearTimeout(pendingDisconnectTimeout);
+            pendingDisconnectTimeouts.delete(name);
+            players.find(player => player.name === name).id = socket.id;
+
+            socket.emit("init", socket.id);
+            emitGameState();
+            return;
+        }
+
         if (players.find(player => player.name === name)) {
             socket.emit("joinError", "A player named \"" + name + "\" is already in this game.");
             return;
@@ -94,6 +174,16 @@ io.on("connection", async (socket) => {
             energy: 0
         });
 
+        try {
+            await rpsDatabase.collection("players").updateOne(
+                { name: name },
+                { $setOnInsert: { name: name, energy: 0 } },
+                { upsert: true }
+            );
+        } catch (error) {
+            console.error("Failed to upsert player \"" + name + "\" in database:", error);
+        }
+
         for (const player of players) {
             player.chosenCard = "";
         }
@@ -102,31 +192,23 @@ io.on("connection", async (socket) => {
         emitGameState();
     });
 
-    socket.on("disconnect", async () => {
-        players = players.filter(p => p.id !== socket.id);
-        emitGameState();
-        await evaluateChoices();
-    });
-
-    socket.on("leave", async () => {
-        players = players.filter(p => p.id !== socket.id);
-        emitGameState();
-        await evaluateChoices();
-    });
+    socket.on("disconnect", () => scheduleDisconnectRemoval(socket.id));
+    socket.on("leave", () => removePlayer(socket.id));
 
     socket.on("chose-thing", async (card) => {
-        console.log(card);
-        players.find(p => p.id === socket.id).chosenCard = (card === "Reset Choice" ? "" : card);
+        const player = players.find(p => p.id === socket.id);
+        if (!player) return;
+
+        player.chosenCard = (card === "Reset Choice" ? "" : card);
         emitGameState();
         await evaluateChoices();
     });
 
-    games = await rpsDatabase.collection("games").find().toArray();
-    io.emit("games", games);
+    socket.emit("games", games);
 });
 
 connectDatabase().then(() => {
-    server.listen(3002,"0.0.0.0", () => {
+    server.listen(process.env.PORT || 3002,"0.0.0.0", () => {
         console.log("Server running on https://rock-paper-scissors-advanced.onrender.com");
     });
 });
