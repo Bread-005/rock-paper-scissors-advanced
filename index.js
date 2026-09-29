@@ -1,5 +1,46 @@
 import {authenticate, logout, LOGIN_PAGE_URL} from "./auth.js";
 
+const CHOICE_COST_ENERGY = 0;
+const CHOICE_MATCHUPS = {
+    Rock: {beats: "Scissors", losesTo: "Paper"},
+    Paper: {beats: "Rock", losesTo: "Scissors"},
+    Scissors: {beats: "Paper", losesTo: "Rock"}
+};
+
+const TOOLTIP_HOVER_DELAY_MILLISECONDS = 1000;
+
+/**
+ * Attaches a custom tooltip to the given element that appears after a fixed hover delay,
+ * since the native "title" attribute tooltip delay cannot be controlled across browsers.
+ * @param {HTMLElement} targetElement The element to attach the tooltip to.
+ * @param {string} tooltipText The tooltip text, using "\n" for line breaks.
+ */
+function attachDelayedTooltip(targetElement, tooltipText) {
+    let hoverTimeout = null;
+    let tooltipElement = null;
+
+    targetElement.addEventListener("mouseenter", () => {
+        hoverTimeout = setTimeout(() => {
+            tooltipElement = document.createElement("div");
+            tooltipElement.className = "choice-tooltip";
+            tooltipElement.textContent = tooltipText;
+            document.body.appendChild(tooltipElement);
+
+            const targetRectangle = targetElement.getBoundingClientRect();
+            tooltipElement.style.left = (targetRectangle.left + targetRectangle.width / 2) + "px";
+            tooltipElement.style.top = (targetRectangle.bottom + 8) + "px";
+        }, TOOLTIP_HOVER_DELAY_MILLISECONDS);
+    });
+
+    targetElement.addEventListener("mouseleave", () => {
+        clearTimeout(hoverTimeout);
+        if (tooltipElement) {
+            tooltipElement.remove();
+            tooltipElement = null;
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     const loginStorage = await authenticate();
@@ -158,6 +199,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (label.textContent === players.find(p => p.id === myId).chosenCard) {
                     button.style.borderColor = "#00d2ff";
+                }
+
+                const matchup = CHOICE_MATCHUPS[label.textContent];
+                if (matchup) {
+                    attachDelayedTooltip(button, "cost: " + CHOICE_COST_ENERGY + " ⚡\n"
+                        + "beats: " + matchup.beats + "\n"
+                        + "loses to: " + matchup.losesTo);
                 }
 
                 button.appendChild(icon);
