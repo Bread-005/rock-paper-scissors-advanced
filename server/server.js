@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const {MongoClient} = require("mongodb");
+const choiceRules = require("./choiceRules.json");
 
 const app = express();
 const server = http.createServer(app);
@@ -52,6 +53,33 @@ async function connectDatabase() {
 
 const DISCONNECT_GRACE_DURATION_MILLISECONDS = 3000;
 
+const CHOICE_MATCHUPS = choiceRules.matchups;
+const CHOICE_ENERGY_COST = choiceRules.energyCost;
+
+const CHOICE_NAMES = Object.keys(CHOICE_MATCHUPS);
+
+function createEmptyChoiceTally() {
+    const tally = {};
+    for (const choiceName of CHOICE_NAMES) {
+        tally[choiceName] = 0;
+    }
+    return tally;
+}
+
+/**
+ * Fills in missing choice keys with 0, since player documents persisted before a given
+ * choice existed (e.g. Fountain/Pillow/Saw) won't have that key yet.
+ * @param {Object} tally A possibly incomplete chosen/total tally loaded from the database.
+ * @returns {Object} A tally containing every entry in {@link CHOICE_NAMES}.
+ */
+function normalizeChoiceTally(tally) {
+    const normalized = {};
+    for (const choiceName of CHOICE_NAMES) {
+        normalized[choiceName] = tally?.[choiceName] ?? 0;
+    }
+    return normalized;
+}
+
 let players = [];
 let games = [];
 const pendingDisconnectTimeouts = new Map();
@@ -73,20 +101,23 @@ async function evaluateChoices() {
     };
 
     for (const player of players) {
-        let energyGained = 0;
+        const energyBeforeRound = player.energy;
+
+        let winCount = 0;
         for (const player1 of players) {
             if (player.id === player1.id) continue;
 
-            if (player.chosenCard === "Rock" && player1.chosenCard === "Scissors") energyGained++;
-            if (player.chosenCard === "Paper" && player1.chosenCard === "Rock") energyGained++;
-            if (player.chosenCard === "Scissors" && player1.chosenCard === "Paper") energyGained++;
+            if (CHOICE_MATCHUPS[player.chosenCard].beats.includes(player1.chosenCard)) winCount++;
         }
+        const energyGained = winCount - CHOICE_ENERGY_COST[player.chosenCard];
         player.energy += energyGained;
 
         player.chosen[player.chosenCard]++;
-        player.total.Rock++;
-        player.total.Paper++;
-        player.total.Scissors++;
+        for (const choiceName of CHOICE_NAMES) {
+            if (energyBeforeRound >= CHOICE_ENERGY_COST[choiceName]) {
+                player.total[choiceName]++;
+            }
+        }
 
         game.players.push({
             name: player.name,
@@ -178,8 +209,8 @@ io.on("connection", async (socket) => {
         const defaultPlayerStats = {
             name: name,
             energy: 0,
-            chosen: { Rock: 0, Paper: 0, Scissors: 0 },
-            total: { Rock: 0, Paper: 0, Scissors: 0 }
+            chosen: createEmptyChoiceTally(),
+            total: createEmptyChoiceTally()
         };
 
         let playerDocument = defaultPlayerStats;
@@ -198,8 +229,8 @@ io.on("connection", async (socket) => {
             name: name,
             chosenCard: "",
             energy: playerDocument.energy,
-            chosen: playerDocument.chosen,
-            total: playerDocument.total
+            chosen: normalizeChoiceTally(playerDocument.chosen),
+            total: normalizeChoiceTally(playerDocument.total)
         });
 
         for (const player of players) {
@@ -217,7 +248,19 @@ io.on("connection", async (socket) => {
         const player = players.find(p => p.id === socket.id);
         if (!player) return;
 
-        player.chosenCard = (card === "Reset Choice" ? "" : card);
+        if (card === "Reset Choice") {
+            player.chosenCard = "";
+            emitGameState();
+            return;
+        }
+
+        if (!CHOICE_NAMES.includes(card)) return;
+        if (player.energy < CHOICE_ENERGY_COST[card]) {
+            socket.emit("chooseError", "Not enough energy to choose \"" + card + "\".");
+            return;
+        }
+
+        player.chosenCard = card;
         emitGameState();
         await evaluateChoices();
     });

@@ -1,11 +1,5 @@
 import {authenticate, logout, LOGIN_PAGE_URL} from "./auth.js";
 
-const CHOICE_COST_ENERGY = 0;
-const CHOICE_MATCHUPS = {
-    Rock: {beats: "Scissors", losesTo: "Paper"},
-    Paper: {beats: "Rock", losesTo: "Scissors"},
-    Scissors: {beats: "Paper", losesTo: "Rock"}
-};
 
 const TOOLTIP_HOVER_DELAY_MILLISECONDS = 1000;
 
@@ -62,6 +56,10 @@ function clearAllDelayedTooltips() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+    const choiceRules = await fetch("./server/choiceRules.json").then(response => response.json());
+    const CHOICE_MATCHUPS = choiceRules.matchups;
+    const CHOICE_ENERGY_COST = choiceRules.energyCost;
 
     const loginStorage = await authenticate();
     if (!loginStorage) return;
@@ -193,40 +191,72 @@ document.addEventListener("DOMContentLoaded", async () => {
             const choosePanel = document.getElementById("choose-panel");
             clearAllDelayedTooltips();
             choosePanel.innerHTML = "";
-            for (let i = 0; i < 4; i++) {
-                const button = document.createElement("button");
-                button.className = "choice-button";
-
-                const icon = document.createElement("i");
+            const myPlayer = players.find(p => p.id === myId);
+            for (let i = 0; i < 7; i++) {
                 const label = document.createElement("span");
                 label.className = "choice-label";
 
                 if (i === 0) {
                     label.textContent = "Rock";
-                    icon.className = "fa-solid fa-hand-fist";
                 }
                 if (i === 1) {
                     label.textContent = "Paper";
-                    icon.className = "fa-solid fa-hand";
                 }
                 if (i === 2) {
                     label.textContent = "Scissors";
+                }
+                if (i === 3) {
+                    label.textContent = "Fountain";
+                }
+                if (i === 4) {
+                    label.textContent = "Pillow";
+                }
+                if (i === 5) {
+                    label.textContent = "Saw";
+                }
+                if (i === 6) {
+                    label.textContent = "Reset Choice";
+                }
+
+                if (label.textContent !== "Reset Choice" && myPlayer.energy < CHOICE_ENERGY_COST[label.textContent]) {
+                    continue;
+                }
+
+                const button = document.createElement("button");
+                button.className = "choice-button";
+                const icon = document.createElement("i");
+
+                if (i === 0) {
+                    icon.className = "fa-solid fa-hand-fist";
+                }
+                if (i === 1) {
+                    icon.className = "fa-solid fa-hand";
+                }
+                if (i === 2) {
                     icon.className = "fa-solid fa-hand-scissors";
                 }
                 if (i === 3) {
-                    label.textContent = "Reset Choice";
+                    icon.className = "fa-solid fa-water";
+                }
+                if (i === 4) {
+                    icon.className = "fa-solid fa-mattress-pillow";
+                }
+                if (i === 5) {
+                    icon.className = "fa-solid fa-axe";
+                }
+                if (i === 6) {
                     icon.className = "fa-solid fa-arrows-rotate";
                 }
 
-                if (label.textContent === players.find(p => p.id === myId).chosenCard) {
+                if (label.textContent === myPlayer.chosenCard) {
                     button.style.borderColor = "#00d2ff";
                 }
 
                 const matchup = CHOICE_MATCHUPS[label.textContent];
                 if (matchup) {
-                    attachDelayedTooltip(button, "cost: " + CHOICE_COST_ENERGY + " ⚡\n"
-                        + "beats: " + matchup.beats + "\n"
-                        + "loses to: " + matchup.losesTo);
+                    attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
+                        + "beats: " + matchup.beats.join(", ") + "\n"
+                        + "loses to: " + matchup.losesTo.join(", "));
                 }
 
                 button.appendChild(icon);
@@ -276,6 +306,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (player.choice === "Rock") chosenCard.className = "fa-solid fa-hand-fist";
             if (player.choice === "Paper") chosenCard.className = "fa-solid fa-hand";
             if (player.choice === "Scissors") chosenCard.className = "fa-solid fa-hand-scissors";
+            if (player.choice === "Fountain") chosenCard.className = "fa-solid fa-water";
+            if (player.choice === "Pillow") chosenCard.className = "fa-solid fa-mattress-pillow";
+            if (player.choice === "Saw") chosenCard.className = "fa-solid fa-axe";
             const energyGained = document.createElement("div");
             energyGained.textContent = (player.energyGained > -1 ? "+" : "") + player.energyGained;
             const zapIcon = document.createElement("i");

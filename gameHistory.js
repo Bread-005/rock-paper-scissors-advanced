@@ -31,25 +31,34 @@ document.addEventListener("DOMContentLoaded", async () => {
         const gameHistoryList = document.getElementById("game-history-list");
         gameHistoryList.innerHTML = "";
 
+        if (myGames.length === 0) {
+            const noGamesMessage = document.createElement("p");
+            noGamesMessage.textContent = "You haven't played any games yet.";
+            gameHistoryList.append(noGamesMessage);
+            renderPagination(1);
+            return;
+        }
+
         const pageCount = Math.max(1, Math.ceil(myGames.length / GAMES_PER_PAGE));
         currentPage = Math.min(currentPage, pageCount);
 
         const pageStart = (currentPage - 1) * GAMES_PER_PAGE;
         const pageGames = myGames.slice(pageStart, pageStart + GAMES_PER_PAGE);
 
-        for (const game of pageGames) {
-            gameHistoryList.append(createGameCard(game));
+        for (let i = 0; i < pageGames.length; i++) {
+            const gameNumber = myGames.length - (pageStart + i);
+            gameHistoryList.append(createGameCard(pageGames[i], gameNumber));
         }
 
         renderPagination(pageCount);
     }
 
-    function createGameCard(game) {
+    function createGameCard(game, gameNumber) {
         const gameCard = document.createElement("div");
         gameCard.className = "game-history-card";
 
         const gameTitle = document.createElement("h3");
-        gameTitle.textContent = "Game " + game.id;
+        gameTitle.textContent = "Game " + gameNumber;
         gameCard.append(gameTitle);
 
         for (let i = 0; i < game.players.length; i++) {
@@ -65,6 +74,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (player.choice === "Rock") chosenCard.className = "fa-solid fa-hand-fist";
             if (player.choice === "Paper") chosenCard.className = "fa-solid fa-hand";
             if (player.choice === "Scissors") chosenCard.className = "fa-solid fa-hand-scissors";
+            if (player.choice === "Fountain") chosenCard.className = "fa-solid fa-water";
+            if (player.choice === "Pillow") chosenCard.className = "fa-solid fa-mattress-pillow";
+            if (player.choice === "Saw") chosenCard.className = "fa-solid fa-axe";
 
             const energyGained = document.createElement("div");
             energyGained.textContent = (player.energyGained > -1 ? "+" : "") + player.energyGained;
