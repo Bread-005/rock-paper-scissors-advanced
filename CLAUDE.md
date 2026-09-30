@@ -10,12 +10,17 @@ backend is a Node.js/Express + Socket.IO server backed by MongoDB, deployed on R
 
 ## Architecture
 
-- **Frontend (repo root)**: `index.html` + `index.js` is the lobby/game screen; `gameHistory.html` +
-  `gameHistory.js` is a paginated view of a player's past games. Both are ES modules that connect to the
-  same Socket.IO backend at `https://rock-paper-scissors-advanced.onrender.com` (hardcoded, not
-  configurable via env). Styling is in `style.css`; Font Awesome is loaded from
-  `https://core.ontavio.de/font-awesome/...`.
-- **Auth (`auth.js`)**: Session handling is delegated entirely to an external, separate project
+- **Frontend (repo root `index.html`/`gameHistory.html`, JS in `frontend/js/`)**: `index.html` +
+  `frontend/js/index.js` is the lobby/game screen; `gameHistory.html` + `frontend/js/gameHistory.js` is a
+  paginated view of a player's past games. Both are ES modules that connect to the same Socket.IO backend
+  at `https://rock-paper-scissors-advanced.onrender.com` (hardcoded, not configurable via env). Shared JS
+  helpers live in `frontend/js/auth.js` (session handling) and `frontend/js/functions.js` (misc UI helpers).
+  Choice data (matchups, energy costs, icons) is not duplicated into the frontend; it is fetched at
+  page-init time from `server/choiceData.json`, relative to the HTML document (which is at the repo root),
+  so it resolves the same way locally and once pushed to GitHub Pages. Styling is in `frontend/style.css`;
+  Font Awesome is loaded from `https://core.ontavio.de/font-awesome/...`. GitHub Pages source stays `/`
+  (repo root).
+- **Auth (`frontend/js/auth.js`)**: Session handling is delegated entirely to an external, separate project
   ("login-page", hosted at `https://bread-005.github.io/login-page/`) and an external user API
   (`https://hobby-projects-api.onrender.com`). `authenticate()` reads a `login-page` key from
   `localStorage`, verifies the token against `/session/verify`, and redirects to the login page if invalid.

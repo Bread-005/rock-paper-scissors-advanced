@@ -14,5 +14,14 @@
         "Fountain": 1,
         "Pillow": 1,
         "Saw": 1
+    },
+    "icons": {
+        "Rock": "fa-solid fa-hand-fist",
+        "Paper": "fa-solid fa-hand",
+        "Scissors": "fa-solid fa-hand-scissors",
+        "Fountain": "fa-solid fa-water",
+        "Pillow": "fa-solid fa-mattress-pillow",
+        "Saw": "fa-solid fa-axe",
+        "Reset Choice": "fa-solid fa-arrows-rotate"
     }
 }

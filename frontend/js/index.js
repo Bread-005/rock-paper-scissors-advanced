@@ -1,4 +1,5 @@
 import {authenticate, logout, LOGIN_PAGE_URL} from "./auth.js";
+import {createEnergyGainedElement} from "./functions.js";
 
 
 const TOOLTIP_HOVER_DELAY_MILLISECONDS = 1000;
@@ -57,9 +58,10 @@ function clearAllDelayedTooltips() {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-    const choiceRules = await fetch("./server/choiceRules.json").then(response => response.json());
-    const CHOICE_MATCHUPS = choiceRules.matchups;
-    const CHOICE_ENERGY_COST = choiceRules.energyCost;
+    const choiceData = await fetch("server/choiceData.json").then(response => response.json());
+    const CHOICE_MATCHUPS = choiceData.matchups;
+    const CHOICE_ENERGY_COST = choiceData.energyCost;
+    const CHOICE_ICONS = choiceData.icons;
 
     const loginStorage = await authenticate();
     if (!loginStorage) return;
@@ -225,28 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const button = document.createElement("button");
                 button.className = "choice-button";
                 const icon = document.createElement("i");
-
-                if (i === 0) {
-                    icon.className = "fa-solid fa-hand-fist";
-                }
-                if (i === 1) {
-                    icon.className = "fa-solid fa-hand";
-                }
-                if (i === 2) {
-                    icon.className = "fa-solid fa-hand-scissors";
-                }
-                if (i === 3) {
-                    icon.className = "fa-solid fa-water";
-                }
-                if (i === 4) {
-                    icon.className = "fa-solid fa-mattress-pillow";
-                }
-                if (i === 5) {
-                    icon.className = "fa-solid fa-axe";
-                }
-                if (i === 6) {
-                    icon.className = "fa-solid fa-arrows-rotate";
-                }
+                icon.className = CHOICE_ICONS[label.textContent];
 
                 if (label.textContent === myPlayer.chosenCard) {
                     button.style.borderColor = "#00d2ff";
@@ -303,18 +284,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const name = document.createElement("span");
             name.textContent = (i + 1) + ". " + player.name;
             const chosenCard = document.createElement("i");
-            if (player.choice === "Rock") chosenCard.className = "fa-solid fa-hand-fist";
-            if (player.choice === "Paper") chosenCard.className = "fa-solid fa-hand";
-            if (player.choice === "Scissors") chosenCard.className = "fa-solid fa-hand-scissors";
-            if (player.choice === "Fountain") chosenCard.className = "fa-solid fa-water";
-            if (player.choice === "Pillow") chosenCard.className = "fa-solid fa-mattress-pillow";
-            if (player.choice === "Saw") chosenCard.className = "fa-solid fa-axe";
-            const energyGained = document.createElement("div");
-            energyGained.textContent = (player.energyGained > -1 ? "+" : "") + player.energyGained;
-            const zapIcon = document.createElement("i");
-            zapIcon.className = "fa-solid fa-bolt";
-            zapIcon.style.color = "rgb(255, 212, 59)";
-            energyGained.append(zapIcon);
+            chosenCard.className = CHOICE_ICONS[player.choice];
+            const energyGained = createEnergyGainedElement(player.energyGained);
 
             container.append(name);
             container.append(chosenCard);

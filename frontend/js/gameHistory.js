@@ -1,8 +1,12 @@
 import {authenticate, logout} from "./auth.js";
+import {createEnergyGainedElement} from "./functions.js";
 
 const GAMES_PER_PAGE = 10;
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+    const choiceData = await fetch("server/choiceData.json").then(response => response.json());
+    const CHOICE_ICONS = choiceData.icons;
 
     const loginStorage = await authenticate();
     if (!loginStorage) return;
@@ -71,19 +75,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             name.textContent = (i + 1) + ". " + player.name;
 
             const chosenCard = document.createElement("i");
-            if (player.choice === "Rock") chosenCard.className = "fa-solid fa-hand-fist";
-            if (player.choice === "Paper") chosenCard.className = "fa-solid fa-hand";
-            if (player.choice === "Scissors") chosenCard.className = "fa-solid fa-hand-scissors";
-            if (player.choice === "Fountain") chosenCard.className = "fa-solid fa-water";
-            if (player.choice === "Pillow") chosenCard.className = "fa-solid fa-mattress-pillow";
-            if (player.choice === "Saw") chosenCard.className = "fa-solid fa-axe";
+            chosenCard.className = CHOICE_ICONS[player.choice];
 
-            const energyGained = document.createElement("div");
-            energyGained.textContent = (player.energyGained > -1 ? "+" : "") + player.energyGained;
-            const zapIcon = document.createElement("i");
-            zapIcon.className = "fa-solid fa-bolt";
-            zapIcon.style.color = "rgb(255, 212, 59)";
-            energyGained.append(zapIcon);
+            const energyGained = createEnergyGainedElement(player.energyGained);
 
             playerRow.append(name);
             playerRow.append(chosenCard);

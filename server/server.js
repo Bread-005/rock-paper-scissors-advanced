@@ -2,7 +2,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const {MongoClient} = require("mongodb");
-const choiceRules = require("./choiceRules.json");
+const choiceData = require("./choiceData.json");
 
 const app = express();
 const server = http.createServer(app);
@@ -53,8 +53,8 @@ async function connectDatabase() {
 
 const DISCONNECT_GRACE_DURATION_MILLISECONDS = 3000;
 
-const CHOICE_MATCHUPS = choiceRules.matchups;
-const CHOICE_ENERGY_COST = choiceRules.energyCost;
+const CHOICE_MATCHUPS = choiceData.matchups;
+const CHOICE_ENERGY_COST = choiceData.energyCost;
 
 const CHOICE_NAMES = Object.keys(CHOICE_MATCHUPS);
 
