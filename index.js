@@ -9,6 +9,11 @@ const CHOICE_MATCHUPS = {
 
 const TOOLTIP_HOVER_DELAY_MILLISECONDS = 1000;
 
+// Tracks every currently pending/visible tooltip so callers can cancel them all at once,
+// since a button can be removed from the DOM (e.g. on re-render) while its hover delay
+// is still running or its tooltip is still shown, in which case "mouseleave" never fires.
+const activeTooltipCancellers = new Set();
+
 /**
  * Attaches a custom tooltip to the given element that appears after a fixed hover delay,
  * since the native "title" attribute tooltip delay cannot be controlled across browsers.
@@ -19,7 +24,17 @@ function attachDelayedTooltip(targetElement, tooltipText) {
     let hoverTimeout = null;
     let tooltipElement = null;
 
+    const cancelTooltip = () => {
+        clearTimeout(hoverTimeout);
+        if (tooltipElement) {
+            tooltipElement.remove();
+            tooltipElement = null;
+        }
+        activeTooltipCancellers.delete(cancelTooltip);
+    };
+
     targetElement.addEventListener("mouseenter", () => {
+        activeTooltipCancellers.add(cancelTooltip);
         hoverTimeout = setTimeout(() => {
             tooltipElement = document.createElement("div");
             tooltipElement.className = "choice-tooltip";
@@ -32,13 +47,18 @@ function attachDelayedTooltip(targetElement, tooltipText) {
         }, TOOLTIP_HOVER_DELAY_MILLISECONDS);
     });
 
-    targetElement.addEventListener("mouseleave", () => {
-        clearTimeout(hoverTimeout);
-        if (tooltipElement) {
-            tooltipElement.remove();
-            tooltipElement = null;
-        }
-    });
+    targetElement.addEventListener("mouseleave", cancelTooltip);
+}
+
+/**
+ * Cancels every pending or visible tooltip created by {@link attachDelayedTooltip}.
+ * Must be called before removing tooltip-carrying elements from the DOM, since a removed
+ * element never fires "mouseleave" and would otherwise leave its tooltip stuck forever.
+ */
+function clearAllDelayedTooltips() {
+    for (const cancelTooltip of [...activeTooltipCancellers]) {
+        cancelTooltip();
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -171,6 +191,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (players.length >= 2 && players.find(p => p.id === myId)) {
             gameplayDiv.style.display = "flex";
             const choosePanel = document.getElementById("choose-panel");
+            clearAllDelayedTooltips();
             choosePanel.innerHTML = "";
             for (let i = 0; i < 4; i++) {
                 const button = document.createElement("button");
