@@ -55,6 +55,7 @@ const DISCONNECT_GRACE_DURATION_MILLISECONDS = 3000;
 const MAXIMUM_ENERGY_COLLECTORS = 5;
 const ENERGY_COLLECTOR_CHOICE_NAME = "Energy Collector";
 const ENERGY_COLLECTOR_DESTROYER_CHOICE_NAME = "Energy Collector Destroyer";
+const ENERGY_COLLECTOR_DESTROYER_INTERRUPTER_CHOICE_NAME = "Energy Collector Destroyer Interrupter";
 
 const CHOICE_MATCHUPS = choiceData.matchups;
 const CHOICE_ENERGY_COST = choiceData.energyCost;
@@ -131,6 +132,7 @@ async function evaluateChoices() {
             player.energyCollectors++;
         }
 
+        player.roundsPlayed++;
         player.chosen[player.chosenCard]++;
         for (const choiceName of CHOICE_NAMES) {
             if (energyBeforeRound >= CHOICE_ENERGY_COST[choiceName]) {
@@ -164,7 +166,9 @@ async function evaluateChoices() {
 /**
  * Applies the Energy Collector Destroyer's targeted ability: each player who chose it destroys
  * the Energy Collectors of the next player (in player-list order, wrapping around) who currently
- * owns at least one, independently of any other Energy Collector Destroyer chosen this round.
+ * owns at least one, independently of any other Energy Collector Destroyer chosen this round. If
+ * that targeted player chose the Energy Collector Destroyer Interrupter this round, the
+ * destruction is blocked and the ability fizzles instead of targeting a later player.
  * @param {Array<Object>} currentPlayers The players of the current round, in list order.
  */
 function destroyEnergyCollectorsOfTargetedPlayers(currentPlayers) {
@@ -175,7 +179,9 @@ function destroyEnergyCollectorsOfTargetedPlayers(currentPlayers) {
         for (let offset = 1; offset < currentPlayers.length; offset++) {
             const target = currentPlayers[(indexAttacker + offset) % currentPlayers.length];
             if (target.energyCollectors >= 1) {
-                target.energyCollectors = 0;
+                if (target.chosenCard !== ENERGY_COLLECTOR_DESTROYER_INTERRUPTER_CHOICE_NAME) {
+                    target.energyCollectors = 0;
+                }
                 break;
             }
         }
@@ -208,7 +214,8 @@ async function updatePlayerStatsInDatabase(playersToUpdate) {
                 energy: player.energy,
                 chosen: player.chosen,
                 total: player.total,
-                energyCollectors: player.energyCollectors
+                energyCollectors: player.energyCollectors,
+                roundsPlayed: player.roundsPlayed
             } }
         }
     }));
@@ -256,7 +263,8 @@ io.on("connection", async (socket) => {
             energy: 0,
             chosen: createEmptyChoiceTally(),
             total: createEmptyChoiceTally(),
-            energyCollectors: 0
+            energyCollectors: 0,
+            roundsPlayed: 0
         };
 
         let playerDocument = defaultPlayerStats;
@@ -277,7 +285,8 @@ io.on("connection", async (socket) => {
             energy: playerDocument.energy,
             chosen: normalizeChoiceTally(playerDocument.chosen),
             total: normalizeChoiceTally(playerDocument.total),
-            energyCollectors: playerDocument.energyCollectors ?? 0
+            energyCollectors: playerDocument.energyCollectors ?? 0,
+            roundsPlayed: playerDocument.roundsPlayed ?? 0
         });
 
         for (const player of players) {
@@ -308,6 +317,10 @@ io.on("connection", async (socket) => {
         }
         if (card === ENERGY_COLLECTOR_CHOICE_NAME && player.energyCollectors >= MAXIMUM_ENERGY_COLLECTORS) {
             socket.emit("chooseError", "Maximum number of Energy Collectors reached.");
+            return;
+        }
+        if (card === ENERGY_COLLECTOR_DESTROYER_INTERRUPTER_CHOICE_NAME && player.energyCollectors < 1) {
+            socket.emit("chooseError", "You need at least 1 Energy Collector to choose \"" + card + "\".");
             return;
         }
 

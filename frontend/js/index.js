@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             clearAllDelayedTooltips();
             choosePanel.innerHTML = "";
             const myPlayer = players.find(p => p.id === myId);
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 9; i++) {
                 const label = document.createElement("span");
                 label.className = "choice-label";
 
@@ -232,6 +232,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (i === 7) {
                     label.textContent = "Energy Collector Destroyer";
                 }
+                if (i === 8) {
+                    label.textContent = "Energy Collector Destroyer Interrupter";
+                }
 
                 if (label.textContent.length > CHOICE_LABEL_LONG_TEXT_THRESHOLD) {
                     label.classList.add("choice-label-long");
@@ -241,6 +244,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     continue;
                 }
                 if (label.textContent === "Energy Collector" && myPlayer.energyCollectors >= MAXIMUM_ENERGY_COLLECTORS) {
+                    continue;
+                }
+                if (label.textContent === "Energy Collector Destroyer Interrupter" && myPlayer.energyCollectors < 1) {
                     continue;
                 }
 
@@ -265,6 +271,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                         + "loses to: " + matchup.losesTo.join(", ") + "\n"
                         + "prevents every Energy Collector being built this round\n"
                         + "destroys all Energy Collectors of the next player (in the list) who owns at least 1");
+                } else if (label.textContent === "Energy Collector Destroyer Interrupter") {
+                    const matchup = CHOICE_MATCHUPS[label.textContent];
+                    attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
+                        + "beats: " + matchup.beats.join(", ") + "\n"
+                        + "loses to: " + matchup.losesTo.join(", ") + "\n"
+                        + "prevents your own Energy Collectors from being destroyed this round");
                 } else {
                     const matchup = CHOICE_MATCHUPS[label.textContent];
                     if (matchup) {

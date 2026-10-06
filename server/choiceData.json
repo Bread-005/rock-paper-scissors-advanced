@@ -1,13 +1,14 @@
 {
     "matchups": {
-        "Rock": {"beats": ["Scissors", "Saw", "Energy Collector"], "losesTo": ["Paper", "Fountain", "Pillow", "Energy Collector Destroyer"]},
-        "Paper": {"beats": ["Rock", "Fountain", "Energy Collector"], "losesTo": ["Scissors", "Pillow", "Saw", "Energy Collector Destroyer"]},
-        "Scissors": {"beats": ["Paper", "Pillow", "Energy Collector"], "losesTo": ["Rock", "Fountain", "Saw", "Energy Collector Destroyer"]},
-        "Fountain": {"beats": ["Rock", "Scissors", "Saw", "Energy Collector", "Energy Collector Destroyer"], "losesTo": ["Paper", "Pillow"]},
-        "Pillow": {"beats": ["Rock", "Paper", "Fountain", "Energy Collector"], "losesTo": ["Scissors", "Saw", "Energy Collector Destroyer"]},
-        "Saw": {"beats": ["Paper", "Scissors", "Pillow", "Energy Collector"], "losesTo": ["Rock", "Fountain", "Energy Collector Destroyer"]},
-        "Energy Collector": {"beats": [], "losesTo": ["Rock", "Paper", "Scissors", "Fountain", "Pillow", "Saw", "Energy Collector Destroyer"]},
-        "Energy Collector Destroyer": {"beats": ["Rock", "Paper", "Scissors", "Pillow", "Saw", "Energy Collector"], "losesTo": ["Fountain"]}
+        "Rock": {"beats": ["Scissors", "Saw", "Energy Collector", "Energy Collector Destroyer Interrupter"], "losesTo": ["Paper", "Fountain", "Pillow", "Energy Collector Destroyer"]},
+        "Paper": {"beats": ["Rock", "Fountain", "Energy Collector", "Energy Collector Destroyer Interrupter"], "losesTo": ["Scissors", "Pillow", "Saw", "Energy Collector Destroyer"]},
+        "Scissors": {"beats": ["Paper", "Pillow", "Energy Collector", "Energy Collector Destroyer Interrupter"], "losesTo": ["Rock", "Fountain", "Saw", "Energy Collector Destroyer"]},
+        "Fountain": {"beats": ["Rock", "Scissors", "Saw", "Energy Collector", "Energy Collector Destroyer", "Energy Collector Destroyer Interrupter"], "losesTo": ["Paper", "Pillow"]},
+        "Pillow": {"beats": ["Rock", "Paper", "Fountain", "Energy Collector", "Energy Collector Destroyer Interrupter"], "losesTo": ["Scissors", "Saw", "Energy Collector Destroyer"]},
+        "Saw": {"beats": ["Paper", "Scissors", "Pillow", "Energy Collector", "Energy Collector Destroyer Interrupter"], "losesTo": ["Rock", "Fountain", "Energy Collector Destroyer"]},
+        "Energy Collector": {"beats": ["Energy Collector Destroyer Interrupter"], "losesTo": ["Rock", "Paper", "Scissors", "Fountain", "Pillow", "Saw", "Energy Collector Destroyer"]},
+        "Energy Collector Destroyer": {"beats": ["Rock", "Paper", "Scissors", "Pillow", "Saw", "Energy Collector"], "losesTo": ["Fountain", "Energy Collector Destroyer Interrupter"]},
+        "Energy Collector Destroyer Interrupter": {"beats": ["Energy Collector Destroyer"], "losesTo": ["Rock", "Paper", "Scissors", "Fountain", "Pillow", "Saw", "Energy Collector"]}
     },
     "energyCost": {
         "Rock": 0,
@@ -17,7 +18,8 @@
         "Pillow": 1,
         "Saw": 1,
         "Energy Collector": 2,
-        "Energy Collector Destroyer": 3
+        "Energy Collector Destroyer": 3,
+        "Energy Collector Destroyer Interrupter": 1
     },
     "icons": {
         "Rock": "fa-solid fa-hand-fist",
@@ -27,6 +29,7 @@
         "Pillow": "fa-solid fa-mattress-pillow",
         "Saw": "fa-solid fa-axe",
         "Energy Collector": "fa-solid fa-industry",
-        "Energy Collector Destroyer": "fa-solid fa-explosion"
+        "Energy Collector Destroyer": "fa-solid fa-explosion",
+        "Energy Collector Destroyer Interrupter": "fa-solid fa-shield-halved"
     }
 }

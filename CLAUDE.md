@@ -49,4 +49,4 @@ the full, current list of choices and their rules. Some choices are commonly ref
 
 - Energy Collector → EC
 - Energy Collector Destroyer → ECD
-- Energy Collector Destroyer Interrupter → ECDI (not implemented yet, planned)
+- Energy Collector Destroyer Interrupter → ECDI
