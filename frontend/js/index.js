@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             clearAllDelayedTooltips();
             choosePanel.innerHTML = "";
             const myPlayer = players.find(p => p.id === myId);
-            for (let i = 0; i < 7; i++) {
+            for (let i = 0; i < 6; i++) {
                 const label = document.createElement("span");
                 label.className = "choice-label";
 
@@ -216,11 +216,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (i === 5) {
                     label.textContent = "Saw";
                 }
-                if (i === 6) {
-                    label.textContent = "Reset Choice";
-                }
 
-                if (label.textContent !== "Reset Choice" && myPlayer.energy < CHOICE_ENERGY_COST[label.textContent]) {
+                if (myPlayer.energy < CHOICE_ENERGY_COST[label.textContent]) {
                     continue;
                 }
 
@@ -245,7 +242,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 choosePanel.append(button);
 
                 button.addEventListener("click", () => {
-                    socket.emit("chose-thing", label.textContent);
+                    if (label.textContent === myPlayer.chosenCard) {
+                        socket.emit("chose-thing", "Reset Choice");
+                    } else {
+                        socket.emit("chose-thing", label.textContent);
+                    }
                 });
             }
         } else {
