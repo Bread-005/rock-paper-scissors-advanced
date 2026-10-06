@@ -141,6 +141,8 @@ button {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
+                    justify-content: center;
+                    min-height: 90px;
                     padding: 10px;
                     transition: all 0.3s ease;
 
@@ -161,6 +163,10 @@ button {
                     font-size: 0.85rem;
                     text-transform: uppercase;
                     letter-spacing: 1px;
+
+                    &.choice-label-long {
+                        font-size: 0.65rem;
+                    }
                 }
             }
         }
@@ -376,5 +382,60 @@ a {
                 letter-spacing: 1px;
             }
         }
+    }
+}
+
+@media (max-width: 600px) {
+    html {
+        font-size: 125%;
+    }
+
+    .rock-paper-scissors-div {
+        #game {
+            width: 95vw;
+            padding: 10px;
+
+            #playerList {
+                max-height: 220px;
+
+                .player-card {
+                    padding: 12px 8px;
+
+                    .player-name {
+                        font-size: 1rem;
+                    }
+                }
+            }
+
+            #gameplay-div {
+                #choose-panel {
+                    grid-template-columns: repeat(3, 1fr);
+
+                    .choice-button {
+                        min-height: 80px;
+                    }
+                }
+            }
+        }
+    }
+
+    #game-history-link {
+        top: 10px;
+        left: 10px;
+    }
+
+    #user-bar {
+        top: 10px;
+        right: 10px;
+        gap: 10px;
+
+        #your-name-display {
+            font-size: 0.85rem;
+        }
+    }
+
+    .game-history-div {
+        width: 95vw;
+        padding: 10px;
     }
 }

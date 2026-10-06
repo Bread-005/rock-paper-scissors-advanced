@@ -54,6 +54,7 @@ async function connectDatabase() {
 const DISCONNECT_GRACE_DURATION_MILLISECONDS = 3000;
 const MAXIMUM_ENERGY_COLLECTORS = 5;
 const ENERGY_COLLECTOR_CHOICE_NAME = "Energy Collector";
+const ENERGY_COLLECTOR_DESTROYER_CHOICE_NAME = "Energy Collector Destroyer";
 
 const CHOICE_MATCHUPS = choiceData.matchups;
 const CHOICE_ENERGY_COST = choiceData.energyCost;
@@ -102,6 +103,16 @@ async function evaluateChoices() {
         players: []
     };
 
+    // When any player builds a factory this round, all Energy Collectors being built this round
+    // (not already-owned ones) are destroyed before they are completed.
+    const isEnergyCollectorDestroyerChosenThisRound = players.some(
+        (player) => player.chosenCard === ENERGY_COLLECTOR_DESTROYER_CHOICE_NAME
+    );
+
+    // Destroying targeted Energy Collectors happens before energy gains are calculated, so the
+    // destroyed collectors no longer grant their passive income this round.
+    destroyEnergyCollectorsOfTargetedPlayers(players);
+
     for (const player of players) {
         const energyBeforeRound = player.energy;
 
@@ -114,7 +125,9 @@ async function evaluateChoices() {
         const energyGained = winCount - CHOICE_ENERGY_COST[player.chosenCard] + player.energyCollectors;
         player.energy += energyGained;
 
-        if (player.chosenCard === ENERGY_COLLECTOR_CHOICE_NAME && player.energyCollectors < MAXIMUM_ENERGY_COLLECTORS) {
+        if (player.chosenCard === ENERGY_COLLECTOR_CHOICE_NAME
+            && player.energyCollectors < MAXIMUM_ENERGY_COLLECTORS
+            && !isEnergyCollectorDestroyerChosenThisRound) {
             player.energyCollectors++;
         }
 
@@ -145,6 +158,27 @@ async function evaluateChoices() {
         io.emit("games", games);
     } catch (error) {
         console.error("Failed to persist game result:", error);
+    }
+}
+
+/**
+ * Applies the Energy Collector Destroyer's targeted ability: each player who chose it destroys
+ * the Energy Collectors of the next player (in player-list order, wrapping around) who currently
+ * owns at least one, independently of any other Energy Collector Destroyer chosen this round.
+ * @param {Array<Object>} currentPlayers The players of the current round, in list order.
+ */
+function destroyEnergyCollectorsOfTargetedPlayers(currentPlayers) {
+    for (let indexAttacker = 0; indexAttacker < currentPlayers.length; indexAttacker++) {
+        const attacker = currentPlayers[indexAttacker];
+        if (attacker.chosenCard !== ENERGY_COLLECTOR_DESTROYER_CHOICE_NAME) continue;
+
+        for (let offset = 1; offset < currentPlayers.length; offset++) {
+            const target = currentPlayers[(indexAttacker + offset) % currentPlayers.length];
+            if (target.energyCollectors >= 1) {
+                target.energyCollectors = 0;
+                break;
+            }
+        }
     }
 }
 

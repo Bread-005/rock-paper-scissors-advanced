@@ -42,18 +42,11 @@ backend is a Node.js/Express + Socket.IO server backed by MongoDB, deployed on R
     GitHub Pages origin); update both the Socket.IO `cors.origin` list and, if needed, static hosting origin
     together when changing where the frontend is served from.
 
-## Running Locally
+## Choices
 
-All server-side commands (`npm install`, `npm start`, etc.) must be run inside Docker, never directly on
-the host.
+All choices (matchups, energy costs, icons) are defined in `server/choiceData.json` — check this file for
+the full, current list of choices and their rules. Some choices are commonly referred to by abbreviation:
 
-```bash
-cd server
-docker build -t rps-advanced-server .
-docker run -p 3002:3002 -e DATABASE_USERNAME=... -e DATABASE_PASSWORD=... rps-advanced-server
-```
-
-The frontend has no build step; open `index.html` via a static server (e.g. PhpStorm's built-in server on
-port 63342, which is already whitelisted in the backend CORS config).
-
-There is no test suite configured (`npm test` is a placeholder that exits with an error).
+- Energy Collector → EC
+- Energy Collector Destroyer → ECD
+- Energy Collector Destroyer Interrupter → ECDI (not implemented yet, planned)

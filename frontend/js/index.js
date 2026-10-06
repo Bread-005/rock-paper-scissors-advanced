@@ -2,8 +2,9 @@ import {authenticate, logout, LOGIN_PAGE_URL} from "./auth.js";
 import {createEnergyGainedElement} from "./functions.js";
 
 
-const TOOLTIP_HOVER_DELAY_MILLISECONDS = 1000;
+const TOOLTIP_HOVER_DELAY_MILLISECONDS = 500;
 const MAXIMUM_ENERGY_COLLECTORS = 5;
+const CHOICE_LABEL_LONG_TEXT_THRESHOLD = 18;
 
 // Tracks every currently pending/visible tooltip so callers can cancel them all at once,
 // since a button can be removed from the DOM (e.g. on re-render) while its hover delay
@@ -203,7 +204,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             clearAllDelayedTooltips();
             choosePanel.innerHTML = "";
             const myPlayer = players.find(p => p.id === myId);
-            for (let i = 0; i < 7; i++) {
+            for (let i = 0; i < 8; i++) {
                 const label = document.createElement("span");
                 label.className = "choice-label";
 
@@ -228,6 +229,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (i === 6) {
                     label.textContent = "Energy Collector";
                 }
+                if (i === 7) {
+                    label.textContent = "Energy Collector Destroyer";
+                }
+
+                if (label.textContent.length > CHOICE_LABEL_LONG_TEXT_THRESHOLD) {
+                    label.classList.add("choice-label-long");
+                }
 
                 if (myPlayer.energy < CHOICE_ENERGY_COST[label.textContent]) {
                     continue;
@@ -250,6 +258,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                         + "loses to everything\n"
                         + "grants +1 ⚡ per turn for each Energy Collector you own\n"
                         + "max " + MAXIMUM_ENERGY_COLLECTORS + " Energy Collectors");
+                } else if (label.textContent === "Energy Collector Destroyer") {
+                    const matchup = CHOICE_MATCHUPS[label.textContent];
+                    attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
+                        + "beats: " + matchup.beats.join(", ") + "\n"
+                        + "loses to: " + matchup.losesTo.join(", ") + "\n"
+                        + "prevents every Energy Collector being built this round\n"
+                        + "destroys all Energy Collectors of the next player (in the list) who owns at least 1");
                 } else {
                     const matchup = CHOICE_MATCHUPS[label.textContent];
                     if (matchup) {
