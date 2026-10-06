@@ -52,6 +52,8 @@ async function connectDatabase() {
 }
 
 const DISCONNECT_GRACE_DURATION_MILLISECONDS = 3000;
+const MAXIMUM_ENERGY_COLLECTORS = 5;
+const ENERGY_COLLECTOR_CHOICE_NAME = "Energy Collector";
 
 const CHOICE_MATCHUPS = choiceData.matchups;
 const CHOICE_ENERGY_COST = choiceData.energyCost;
@@ -109,8 +111,12 @@ async function evaluateChoices() {
 
             if (CHOICE_MATCHUPS[player.chosenCard].beats.includes(player1.chosenCard)) winCount++;
         }
-        const energyGained = winCount - CHOICE_ENERGY_COST[player.chosenCard];
+        const energyGained = winCount - CHOICE_ENERGY_COST[player.chosenCard] + player.energyCollectors;
         player.energy += energyGained;
+
+        if (player.chosenCard === ENERGY_COLLECTOR_CHOICE_NAME && player.energyCollectors < MAXIMUM_ENERGY_COLLECTORS) {
+            player.energyCollectors++;
+        }
 
         player.chosen[player.chosenCard]++;
         for (const choiceName of CHOICE_NAMES) {
@@ -164,7 +170,12 @@ async function updatePlayerStatsInDatabase(playersToUpdate) {
     const bulkOperations = playersToUpdate.map((player) => ({
         updateOne: {
             filter: { name: player.name },
-            update: { $set: { energy: player.energy, chosen: player.chosen, total: player.total } }
+            update: { $set: {
+                energy: player.energy,
+                chosen: player.chosen,
+                total: player.total,
+                energyCollectors: player.energyCollectors
+            } }
         }
     }));
 
@@ -210,7 +221,8 @@ io.on("connection", async (socket) => {
             name: name,
             energy: 0,
             chosen: createEmptyChoiceTally(),
-            total: createEmptyChoiceTally()
+            total: createEmptyChoiceTally(),
+            energyCollectors: 0
         };
 
         let playerDocument = defaultPlayerStats;
@@ -230,7 +242,8 @@ io.on("connection", async (socket) => {
             chosenCard: "",
             energy: playerDocument.energy,
             chosen: normalizeChoiceTally(playerDocument.chosen),
-            total: normalizeChoiceTally(playerDocument.total)
+            total: normalizeChoiceTally(playerDocument.total),
+            energyCollectors: playerDocument.energyCollectors ?? 0
         });
 
         for (const player of players) {
@@ -257,6 +270,10 @@ io.on("connection", async (socket) => {
         if (!CHOICE_NAMES.includes(card)) return;
         if (player.energy < CHOICE_ENERGY_COST[card]) {
             socket.emit("chooseError", "Not enough energy to choose \"" + card + "\".");
+            return;
+        }
+        if (card === ENERGY_COLLECTOR_CHOICE_NAME && player.energyCollectors >= MAXIMUM_ENERGY_COLLECTORS) {
+            socket.emit("chooseError", "Maximum number of Energy Collectors reached.");
             return;
         }
 

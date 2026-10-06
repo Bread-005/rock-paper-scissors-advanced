@@ -1,11 +1,12 @@
 {
     "matchups": {
-        "Rock": {"beats": ["Scissors", "Saw"], "losesTo": ["Paper", "Fountain", "Pillow"]},
-        "Paper": {"beats": ["Rock", "Fountain"], "losesTo": ["Scissors", "Pillow", "Saw"]},
-        "Scissors": {"beats": ["Paper", "Pillow"], "losesTo": ["Rock", "Fountain", "Saw"]},
-        "Fountain": {"beats": ["Rock", "Scissors", "Saw"], "losesTo": ["Paper", "Pillow"]},
-        "Pillow": {"beats": ["Rock", "Paper", "Fountain"], "losesTo": ["Scissors", "Saw"]},
-        "Saw": {"beats": ["Paper", "Scissors", "Pillow"], "losesTo": ["Rock", "Fountain"]}
+        "Rock": {"beats": ["Scissors", "Saw", "Energy Collector"], "losesTo": ["Paper", "Fountain", "Pillow"]},
+        "Paper": {"beats": ["Rock", "Fountain", "Energy Collector"], "losesTo": ["Scissors", "Pillow", "Saw"]},
+        "Scissors": {"beats": ["Paper", "Pillow", "Energy Collector"], "losesTo": ["Rock", "Fountain", "Saw"]},
+        "Fountain": {"beats": ["Rock", "Scissors", "Saw", "Energy Collector"], "losesTo": ["Paper", "Pillow"]},
+        "Pillow": {"beats": ["Rock", "Paper", "Fountain", "Energy Collector"], "losesTo": ["Scissors", "Saw"]},
+        "Saw": {"beats": ["Paper", "Scissors", "Pillow", "Energy Collector"], "losesTo": ["Rock", "Fountain"]},
+        "Energy Collector": {"beats": [], "losesTo": ["Rock", "Paper", "Scissors", "Fountain", "Pillow", "Saw"]}
     },
     "energyCost": {
         "Rock": 0,
@@ -13,7 +14,8 @@
         "Scissors": 0,
         "Fountain": 1,
         "Pillow": 1,
-        "Saw": 1
+        "Saw": 1,
+        "Energy Collector": 2
     },
     "icons": {
         "Rock": "fa-solid fa-hand-fist",
@@ -22,6 +24,6 @@
         "Fountain": "fa-solid fa-water",
         "Pillow": "fa-solid fa-mattress-pillow",
         "Saw": "fa-solid fa-axe",
-        "Reset Choice": "fa-solid fa-arrows-rotate"
+        "Energy Collector": "fa-solid fa-industry"
     }
 }

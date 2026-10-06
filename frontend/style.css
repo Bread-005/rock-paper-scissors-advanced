@@ -95,9 +95,19 @@ button {
                 }
 
                 .player-energy {
+                    margin-left: 12px;
+                    min-width: 30px;
+                    text-align: right;
+                }
+
+                .player-energy-collectors {
                     margin-left: auto;
                     min-width: 30px;
                     text-align: right;
+
+                    i {
+                        margin-left: 6px;
+                    }
                 }
 
                 .player-status-icon {

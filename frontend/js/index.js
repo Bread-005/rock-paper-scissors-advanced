@@ -3,6 +3,7 @@ import {createEnergyGainedElement} from "./functions.js";
 
 
 const TOOLTIP_HOVER_DELAY_MILLISECONDS = 1000;
+const MAXIMUM_ENERGY_COLLECTORS = 5;
 
 // Tracks every currently pending/visible tooltip so callers can cancel them all at once,
 // since a button can be removed from the DOM (e.g. on re-render) while its hover delay
@@ -159,6 +160,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (myId === player.id) nameSpan.textContent += " (you)";
             playerCard.appendChild(nameSpan);
 
+            const energyCollectorsSpan = document.createElement("span");
+            energyCollectorsSpan.className = "player-energy-collectors";
+            energyCollectorsSpan.textContent = player.energyCollectors;
+            const energyCollectorsIcon = document.createElement("i");
+            energyCollectorsIcon.className = "fa-solid fa-industry";
+            energyCollectorsSpan.appendChild(energyCollectorsIcon);
+            playerCard.appendChild(energyCollectorsSpan);
+
             const energySpan = document.createElement("span");
             energySpan.className = "player-energy";
             energySpan.textContent = player.energy;
@@ -194,7 +203,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             clearAllDelayedTooltips();
             choosePanel.innerHTML = "";
             const myPlayer = players.find(p => p.id === myId);
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 7; i++) {
                 const label = document.createElement("span");
                 label.className = "choice-label";
 
@@ -216,8 +225,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (i === 5) {
                     label.textContent = "Saw";
                 }
+                if (i === 6) {
+                    label.textContent = "Energy Collector";
+                }
 
                 if (myPlayer.energy < CHOICE_ENERGY_COST[label.textContent]) {
+                    continue;
+                }
+                if (label.textContent === "Energy Collector" && myPlayer.energyCollectors >= MAXIMUM_ENERGY_COLLECTORS) {
                     continue;
                 }
 
@@ -230,11 +245,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                     button.style.borderColor = "#00d2ff";
                 }
 
-                const matchup = CHOICE_MATCHUPS[label.textContent];
-                if (matchup) {
+                if (label.textContent === "Energy Collector") {
                     attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
-                        + "beats: " + matchup.beats.join(", ") + "\n"
-                        + "loses to: " + matchup.losesTo.join(", "));
+                        + "loses to everything\n"
+                        + "grants +1 ⚡ per turn for each Energy Collector you own\n"
+                        + "max " + MAXIMUM_ENERGY_COLLECTORS + " Energy Collectors");
+                } else {
+                    const matchup = CHOICE_MATCHUPS[label.textContent];
+                    if (matchup) {
+                        attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
+                            + "beats: " + matchup.beats.join(", ") + "\n"
+                            + "loses to: " + matchup.losesTo.join(", "));
+                    }
                 }
 
                 button.appendChild(icon);
