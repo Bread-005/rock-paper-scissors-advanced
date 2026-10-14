@@ -56,6 +56,7 @@ const MAXIMUM_ENERGY_COLLECTORS = 5;
 const ENERGY_COLLECTOR_CHOICE_NAME = "Energy Collector";
 const ENERGY_COLLECTOR_DESTROYER_CHOICE_NAME = "Energy Collector Destroyer";
 const ENERGY_COLLECTOR_DESTROYER_INTERRUPTER_CHOICE_NAME = "Energy Collector Destroyer Interrupter";
+const TIME_MACHINE_CHOICE_NAME = "Time Machine";
 
 const CHOICE_MATCHUPS = choiceData.matchups;
 const CHOICE_ENERGY_COST = choiceData.energyCost;
@@ -104,6 +105,12 @@ async function evaluateChoices() {
         players: []
     };
 
+    // Statistics and game history document the card each player actually clicked this round,
+    // not the card Time Machine makes them play, since player.chosenCard gets overwritten below.
+    const clickedCardsById = new Map(players.map((player) => [player.id, player.chosenCard]));
+
+    applyTimeMachineEffects(players);
+
     // When any player builds a factory this round, all Energy Collectors being built this round
     // (not already-owned ones) are destroyed before they are completed.
     const isEnergyCollectorDestroyerChosenThisRound = players.some(
@@ -116,6 +123,7 @@ async function evaluateChoices() {
 
     for (const player of players) {
         const energyBeforeRound = player.energy;
+        const clickedCard = clickedCardsById.get(player.id);
 
         let winCount = 0;
         for (const player1 of players) {
@@ -133,7 +141,7 @@ async function evaluateChoices() {
         }
 
         player.roundsPlayed++;
-        player.chosen[player.chosenCard]++;
+        player.chosen[clickedCard]++;
         for (const choiceName of CHOICE_NAMES) {
             if (energyBeforeRound >= CHOICE_ENERGY_COST[choiceName]) {
                 player.total[choiceName]++;
@@ -142,12 +150,13 @@ async function evaluateChoices() {
 
         game.players.push({
             name: player.name,
-            choice: player.chosenCard,
+            played: player.chosenCard,
             energyGained: energyGained
         });
     }
 
     for (const player of players) {
+        player.lastChosenCard = clickedCardsById.get(player.id);
         player.chosenCard = "";
     }
     emitGameState();
@@ -185,6 +194,25 @@ function destroyEnergyCollectorsOfTargetedPlayers(currentPlayers) {
                 break;
             }
         }
+    }
+}
+
+/**
+ * Applies the Time Machine's ability: every player who chose it this round makes their below
+ * neighbor (next player in list order, wrapping around) play the card that neighbor chose last
+ * turn instead of their current choice. Each Time Machine effect is resolved independently
+ * against the original choices of the round, so a player can both have their own choice
+ * overridden by the player above them and still override the player below them.
+ * @param {Array<Object>} currentPlayers The players of the current round, in list order.
+ */
+function applyTimeMachineEffects(currentPlayers) {
+    const originalChoices = currentPlayers.map((player) => player.chosenCard);
+
+    for (let indexPlayer = 0; indexPlayer < currentPlayers.length; indexPlayer++) {
+        if (originalChoices[indexPlayer] !== TIME_MACHINE_CHOICE_NAME) continue;
+
+        const belowNeighbor = currentPlayers[(indexPlayer + 1) % currentPlayers.length];
+        belowNeighbor.chosenCard = belowNeighbor.lastChosenCard;
     }
 }
 
@@ -282,6 +310,7 @@ io.on("connection", async (socket) => {
             id: socket.id,
             name: name,
             chosenCard: "",
+            lastChosenCard: "",
             energy: playerDocument.energy,
             chosen: normalizeChoiceTally(playerDocument.chosen),
             total: normalizeChoiceTally(playerDocument.total),
@@ -322,6 +351,14 @@ io.on("connection", async (socket) => {
         if (card === ENERGY_COLLECTOR_DESTROYER_INTERRUPTER_CHOICE_NAME && player.energyCollectors < 1) {
             socket.emit("chooseError", "You need at least 1 Energy Collector to choose \"" + card + "\".");
             return;
+        }
+        if (card === TIME_MACHINE_CHOICE_NAME) {
+            const indexPlayer = players.findIndex((currentPlayer) => currentPlayer.id === socket.id);
+            const belowNeighbor = players[(indexPlayer + 1) % players.length];
+            if (!belowNeighbor.lastChosenCard) {
+                socket.emit("chooseError", "\"" + card + "\" needs your below neighbor to have played a card in a previous round.");
+                return;
+            }
         }
 
         player.chosenCard = card;

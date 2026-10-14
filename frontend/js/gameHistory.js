@@ -74,13 +74,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             const name = document.createElement("span");
             name.textContent = (i + 1) + ". " + player.name;
 
-            const chosenCard = document.createElement("i");
-            chosenCard.className = CHOICE_ICONS[player.choice];
+            const playedCard = document.createElement("i");
+            playedCard.className = CHOICE_ICONS[player.played];
 
             const energyGained = createEnergyGainedElement(player.energyGained);
 
             playerRow.append(name);
-            playerRow.append(chosenCard);
+            playerRow.append(playedCard);
             playerRow.append(energyGained);
             gameCard.append(playerRow);
         }

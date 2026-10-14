@@ -65,6 +65,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     const CHOICE_ENERGY_COST = choiceData.energyCost;
     const CHOICE_ICONS = choiceData.icons;
 
+    /**
+     * Returns the names of every choice whose "beats" list includes the given choice, since
+     * choiceData.json only stores each choice's own wins, not its losses.
+     * @param {string} choiceName The choice to find counters for.
+     * @returns {Array<string>} The choices that beat the given choice.
+     */
+    function getChoicesThatBeat(choiceName) {
+        return Object.keys(CHOICE_MATCHUPS).filter(
+            (otherChoiceName) => CHOICE_MATCHUPS[otherChoiceName].beats.includes(choiceName)
+        );
+    }
+
     const loginStorage = await authenticate();
     if (!loginStorage) return;
 
@@ -204,7 +216,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             clearAllDelayedTooltips();
             choosePanel.innerHTML = "";
             const myPlayer = players.find(p => p.id === myId);
-            for (let i = 0; i < 9; i++) {
+            const myPlayerIndex = players.findIndex(p => p.id === myId);
+            const myBelowNeighbor = players[(myPlayerIndex + 1) % players.length];
+
+            for (let i = 0; i < 10; i++) {
                 const label = document.createElement("span");
                 label.className = "choice-label";
 
@@ -235,6 +250,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (i === 8) {
                     label.textContent = "Energy Collector Destroyer Interrupter";
                 }
+                if (i === 9) {
+                    label.textContent = "Time Machine";
+                }
 
                 if (label.textContent.length > CHOICE_LABEL_LONG_TEXT_THRESHOLD) {
                     label.classList.add("choice-label-long");
@@ -247,6 +265,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     continue;
                 }
                 if (label.textContent === "Energy Collector Destroyer Interrupter" && myPlayer.energyCollectors < 1) {
+                    continue;
+                }
+                if (label.textContent === "Time Machine" && !myBelowNeighbor.lastChosenCard) {
                     continue;
                 }
 
@@ -268,21 +289,27 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const matchup = CHOICE_MATCHUPS[label.textContent];
                     attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
                         + "beats: " + matchup.beats.join(", ") + "\n"
-                        + "loses to: " + matchup.losesTo.join(", ") + "\n"
+                        + "loses to: " + getChoicesThatBeat(label.textContent).join(", ") + "\n"
                         + "prevents every Energy Collector being built this round\n"
                         + "destroys all Energy Collectors of the next player (in the list) who owns at least 1");
                 } else if (label.textContent === "Energy Collector Destroyer Interrupter") {
                     const matchup = CHOICE_MATCHUPS[label.textContent];
                     attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
                         + "beats: " + matchup.beats.join(", ") + "\n"
-                        + "loses to: " + matchup.losesTo.join(", ") + "\n"
+                        + "loses to: " + getChoicesThatBeat(label.textContent).join(", ") + "\n"
                         + "prevents your own Energy Collectors from being destroyed this round");
+                } else if (label.textContent === "Time Machine") {
+                    const matchup = CHOICE_MATCHUPS[label.textContent];
+                    attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
+                        + "beats: " + matchup.beats.join(", ") + "\n"
+                        + "loses to: " + getChoicesThatBeat(label.textContent).join(", ") + "\n"
+                        + "your below neighbor plays the card they chose last turn");
                 } else {
                     const matchup = CHOICE_MATCHUPS[label.textContent];
                     if (matchup) {
                         attachDelayedTooltip(button, "cost: " + CHOICE_ENERGY_COST[label.textContent] + " ⚡\n"
                             + "beats: " + matchup.beats.join(", ") + "\n"
-                            + "loses to: " + matchup.losesTo.join(", "));
+                            + "loses to: " + getChoicesThatBeat(label.textContent).join(", "));
                     }
                 }
 
@@ -333,12 +360,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             container.style.justifyContent = "flex-start";
             const name = document.createElement("span");
             name.textContent = (i + 1) + ". " + player.name;
-            const chosenCard = document.createElement("i");
-            chosenCard.className = CHOICE_ICONS[player.choice];
+            const playedCard = document.createElement("i");
+            playedCard.className = CHOICE_ICONS[player.played];
             const energyGained = createEnergyGainedElement(player.energyGained);
 
             container.append(name);
-            container.append(chosenCard);
+            container.append(playedCard);
             container.append(energyGained);
 
             mostRecentGame.append(container);
