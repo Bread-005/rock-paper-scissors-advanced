@@ -62,6 +62,7 @@ const CHOICE_MATCHUPS = choiceData.matchups;
 const CHOICE_ENERGY_COST = choiceData.energyCost;
 
 const CHOICE_NAMES = Object.keys(CHOICE_MATCHUPS);
+const TWO_PLAYER_DISABLED_CHOICE_NAMES = choiceData.twoPlayerDisabledChoices;
 
 function createEmptyChoiceTally() {
     const tally = {};
@@ -218,6 +219,11 @@ function applyTimeMachineEffects(currentPlayers) {
 
 async function removePlayer(idSocket) {
     players = players.filter(p => p.id !== idSocket);
+
+    for (const player of players) {
+        player.chosenCard = "";
+    }
+
     emitGameState();
     await evaluateChoices();
 }
@@ -340,6 +346,10 @@ io.on("connection", async (socket) => {
         }
 
         if (!CHOICE_NAMES.includes(card)) return;
+        if (players.length === 2 && TWO_PLAYER_DISABLED_CHOICE_NAMES.includes(card)) {
+            socket.emit("chooseError", "\"" + card + "\" cannot be played with only two players.");
+            return;
+        }
         if (player.energy < CHOICE_ENERGY_COST[card]) {
             socket.emit("chooseError", "Not enough energy to choose \"" + card + "\".");
             return;

@@ -23,6 +23,7 @@
         "Energy Collector Destroyer Interrupter": 1,
         "Time Machine": 1
     },
+    "twoPlayerDisabledChoices": ["Fountain", "Pillow", "Saw"],
     "icons": {
         "Rock": "fa-solid fa-hand-fist",
         "Paper": "fa-solid fa-hand",

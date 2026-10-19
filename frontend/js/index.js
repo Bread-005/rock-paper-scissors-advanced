@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const CHOICE_MATCHUPS = choiceData.matchups;
     const CHOICE_ENERGY_COST = choiceData.energyCost;
     const CHOICE_ICONS = choiceData.icons;
+    const TWO_PLAYER_DISABLED_CHOICES = choiceData.twoPlayerDisabledChoices;
 
     /**
      * Returns the names of every choice whose "beats" list includes the given choice, since
@@ -259,6 +260,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 if (myPlayer.energy < CHOICE_ENERGY_COST[label.textContent]) {
+                    continue;
+                }
+                if (players.length === 2 && TWO_PLAYER_DISABLED_CHOICES.includes(label.textContent)) {
                     continue;
                 }
                 if (label.textContent === "Energy Collector" && myPlayer.energyCollectors >= MAXIMUM_ENERGY_COLLECTORS) {
