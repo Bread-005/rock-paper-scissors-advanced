@@ -144,6 +144,9 @@ async function evaluateChoices() {
         player.roundsPlayed++;
         player.chosen[clickedCard]++;
         for (const choiceName of CHOICE_NAMES) {
+            if (players.length === 2 && TWO_PLAYER_DISABLED_CHOICE_NAMES.includes(choiceName)) {
+                continue;
+            }
             if (energyBeforeRound >= CHOICE_ENERGY_COST[choiceName]) {
                 player.total[choiceName]++;
             }
